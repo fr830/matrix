@@ -1,0 +1,1212 @@
+<?xml version="1.0" encoding="windows-1251" ?>
+<matrix>
+  <tagcache interval="10000" type="disk" path="logs/tags" description="время обновления кэша в мс"/>
+  <logmanager mode="nolog" description="log|nolog">
+    <logfiles>
+      <logfile name="log1" path="logs/log1" size="32768"/>
+      <logfile name="log2" path="logs/log2" size="32768"/>
+      <logfile name="log3" path="logs/log3" size="32768"/>
+    </logfiles>
+    <message name="message" path="logs/app.log" level="console"/>
+  </logmanager>
+  <tagstoremanager>
+    <tagstore name="file" mode="file">
+      <init filename="logs/store.dat" delimiter=";" />
+    </tagstore>
+    <!--
+    <tagstore name="sql" mode="mssql">
+      <init rowpertran="200" connectionString="Data Source=asu-ora-tool;Initial Catalog=matrix;Integrated Security=True;Pooling=False" />
+    </tagstore>
+    <tagstore name="sql" mode="oracle">
+     <init rowpertran="200" connectionString="Data Source=asu-ora-tool;Persist Security Info=True;User ID=matrix;password=matrix;Unicode=True" />
+    </tagstore>
+-->
+  </tagstoremanager>
+
+  <servicemanager checkinterval="5000">
+    <services>
+<!--
+      <service description="Получение тестов" name="getTests" type="Matrix.Services.ServiceMySQL" assembly="Matrix.Services.ServiceMySQL.dll">
+        <init interval="1000" startif="[busy]=0" status="[busy]=1"
+        connectionString="[lnk100.ConnectionString]"
+            type="query" checkinterval="60000" description="query|scalar|update">
+          <query>
+            <![CDATA[
+				      select t.test_id, t.date, t.item_id, i.serial, t.result, e.result emat_result, c.result ec_result from tests t 
+                inner join items i on i.item_id=t.item_id 
+                left outer join emat_results e on e.test_id = t.test_id
+                left outer join ec_results c on c.test_id = t.test_id
+              where t.test_id > @lastTest and t.date < (select date_add(max(date), INTERVAL -10 MINUTE) from tests)
+              limit 100
+				  ]]>
+          </query>
+          <map name="tests" column=""/>
+          <param name="@lastTest" type="int" typeval="tag" value="lastTest"/>
+        </init>
+      </service>
+      <service description="Передача тестов в ИТС РБЦ" name="saveTests" type="xml2mssql" enable="true">
+        <init interval="1000" startif="[busy]=1" status="[busy]=0"
+         connectionString="[itsRBC.ConnectionString]"
+          type="snapshot"  checkinterval="60000" description="snapshot|merge">
+          <delete>
+            <command>
+              <![CDATA[SELECT 1]]>
+            </command>
+          </delete>
+          <insert>
+            <command>
+              <![CDATA[
+              MERGE lnk100.tests AS t 
+                USING (SELECT @test_id,@date,@item_id,@serial,@result,@emat_result,@ec_result) AS s (test_id,date,item_id,serial,result,emat_result,ec_result)
+                  ON (t.test_id = s.test_id)
+                WHEN MATCHED THEN 
+                  UPDATE SET date = s.date, item_id = s.item_id, serial = s.serial, result = s.result, emat_result = s.emat_result, ec_result = s.ec_result        
+	              WHEN NOT MATCHED THEN	
+	                INSERT (test_id,date,item_id,serial,result,emat_result,ec_result)
+	                VALUES (s.test_id,s.date,s.item_id,s.serial,s.result,s.emat_result,s.ec_result); 
+				      ]]>
+            </command>
+            <param name="@test_id" type="int" typeval="const" value="test_id"/>
+            <param name="@date" type="datetime" typeval="const" value="date"/>
+            <param name="@item_id" type="int" typeval="const" value="item_id"/>
+            <param name="@serial" type="string" typeval="const" value="serial"/>
+            <param name="@result" type="int" typeval="const" value="result"/>
+            <param name="@emat_result" type="int" typeval="const" value="emat_result"/>
+            <param name="@ec_result" type="int" typeval="const" value="ec_result"/>
+          </insert>
+          <param name="table" type="xml" typeval="tag" value="tests" description="typeval is tag|const"/>
+          <param name="row" type="xml" typeval="const" value="//rows/row" description="XPath тега строки"/>
+          <param name="dmlStatus" type="string" typeval="const" value="dmlstatus" description="XPath тега поля DML операции I,U,D"/>
+          <param name="historyFieldName" type="string" typeval="const" value="test_id" description="XPath тега поля истории"/>
+          <param name="historyFieldValue" type="int" direction="out" typeval="tag" value="lastTest" description="typeval is tag|const"/>
+        </init>
+      </service>
+      
+-->      
+      <service name="OpcClientX" type="custom" enabled="true">
+        <init interval="500" type="Matrix.Services.ServiceOPCSimaticNET" assembly="Matrix.Services.OPCSimaticNET.dll" callback="false"  opcds="cache" progid="ICONICS.SimulatorOPCDA" host="localhost" group="testx" checkinterval="5000" keepalive="true">
+          <map name="tag001" opctag="Numeric._I2" />
+<!--
+          <map name="tag002" opctag="Logical._BOOL" />
+          <map name="tag003" opctag="Logical._BOOL" />
+          <map name="tag004" opctag="Logical._BOOL" />
+          <map name="tag005" opctag="Numeric._I2" />
+          <map name="tag006" opctag="Logical._BOOL" />
+          <map name="tag007" opctag="Logical._BOOL" />
+          <map name="tag008" opctag="Logical._BOOL" />
+          <map name="tag009" opctag="Numeric._I2" />
+          <map name="tag010" opctag="Logical._BOOL" />
+          <map name="tag011" opctag="Logical._BOOL" />
+          <map name="tag012" opctag="Logical._BOOL" />
+          <map name="tag013" opctag="Numeric._I2" />
+          <map name="tag014" opctag="Logical._BOOL" />
+          <map name="tag015" opctag="Logical._BOOL" />
+          <map name="tag016" opctag="Logical._BOOL" />
+          <map name="tag017" opctag="Numeric._I2" />
+          <map name="tag018" opctag="Logical._BOOL" />
+          <map name="tag019" opctag="Logical._BOOL" />
+          <map name="tag020" opctag="Logical._BOOL" />
+          <map name="tag021" opctag="Numeric._I2" />
+          <map name="tag022" opctag="Logical._BOOL" />
+          <map name="tag023" opctag="Logical._BOOL" />
+          <map name="tag024" opctag="Logical._BOOL" />
+          <map name="tag025" opctag="Numeric._I2" />
+          <map name="tag026" opctag="Logical._BOOL" />
+          <map name="tag027" opctag="Logical._BOOL" />
+          <map name="tag028" opctag="Logical._BOOL" />
+          <map name="tag029" opctag="Numeric._I2" />
+          <map name="tag030" opctag="Logical._BOOL" />
+          <map name="tag031" opctag="Logical._BOOL" />
+          <map name="tag032" opctag="Logical._BOOL" />
+          <map name="tag033" opctag="Numeric._I2" />
+          <map name="tag034" opctag="Logical._BOOL" />
+          <map name="tag035" opctag="Logical._BOOL" />
+          <map name="tag036" opctag="Logical._BOOL" />
+          <map name="tag037" opctag="Numeric._I2" />
+          <map name="tag038" opctag="Logical._BOOL" />
+          <map name="tag039" opctag="Logical._BOOL" />
+          <map name="tag040" opctag="Logical._BOOL" />
+          <map name="tag041" opctag="Numeric._I2" />
+          <map name="tag042" opctag="Logical._BOOL" />
+          <map name="tag043" opctag="Logical._BOOL" />
+          <map name="tag044" opctag="Logical._BOOL" />
+          <map name="tag045" opctag="Numeric._I2" />
+          <map name="tag046" opctag="Logical._BOOL" />
+          <map name="tag047" opctag="Logical._BOOL" />
+          <map name="tag048" opctag="Logical._BOOL" />
+          <map name="tag049" opctag="Numeric._I2" />
+          <map name="tag050" opctag="Logical._BOOL" />
+          <map name="tag051" opctag="Logical._BOOL" />
+          <map name="tag052" opctag="Logical._BOOL" />
+          <map name="tag053" opctag="Numeric._I2" />
+          <map name="tag054" opctag="Logical._BOOL" />
+          <map name="tag055" opctag="Logical._BOOL" />
+          <map name="tag056" opctag="Logical._BOOL" />
+          <map name="tag057" opctag="Numeric._I2" />
+          <map name="tag058" opctag="Logical._BOOL" />
+          <map name="tag059" opctag="Logical._BOOL" />
+          <map name="tag060" opctag="Logical._BOOL" />
+          <map name="tag061" opctag="Logical._BOOL" />
+          <map name="tag062" opctag="Logical._BOOL" />
+          <map name="tag063" opctag="Numeric._I2" />
+          <map name="tag064" opctag="Logical._BOOL" />
+          <map name="tag065" opctag="Logical._BOOL" />
+          <map name="tag066" opctag="Logical._BOOL" />
+          <map name="tag067" opctag="Numeric._I2" />
+          <map name="tag068" opctag="Logical._BOOL" />
+          <map name="tag069" opctag="Logical._BOOL" />
+          <map name="tag070" opctag="Logical._BOOL" />
+          <map name="tag071" opctag="Logical._BOOL" />
+          <map name="tag072" opctag="Logical._BOOL" />
+          <map name="tag073" opctag="Numeric._I2" />
+          <map name="tag074" opctag="Logical._BOOL" />
+          <map name="tag075" opctag="Logical._BOOL" />
+          <map name="tag076" opctag="Logical._BOOL" />
+          <map name="tag077" opctag="Numeric._I2" />
+          <map name="tag078" opctag="Logical._BOOL" />
+          <map name="tag079" opctag="Logical._BOOL" />
+          <map name="tag080" opctag="Logical._BOOL" />
+          <map name="tag081" opctag="Logical._BOOL" />
+          <map name="tag082" opctag="Logical._BOOL" />
+          <map name="tag083" opctag="Numeric._I2" />
+          <map name="tag084" opctag="Logical._BOOL" />
+          <map name="tag085" opctag="Logical._BOOL" />
+          <map name="tag086" opctag="Logical._BOOL" />
+          <map name="tag087" opctag="Numeric._I2" />
+          <map name="tag088" opctag="Logical._BOOL" />
+          <map name="tag089" opctag="Logical._BOOL" />
+          <map name="tag090" opctag="Logical._BOOL" />
+          <map name="tag091" opctag="Logical._BOOL" />
+          <map name="tag092" opctag="Logical._BOOL" />
+          <map name="tag093" opctag="Numeric._I2" />
+          <map name="tag094" opctag="Logical._BOOL" />
+          <map name="tag095" opctag="Logical._BOOL" />
+          <map name="tag096" opctag="Logical._BOOL" />
+          <map name="tag097" opctag="Numeric._I2" />
+          <map name="tag098" opctag="Logical._BOOL" />
+          <map name="tag099" opctag="Logical._BOOL" />
+          <map name="tag100" opctag="Logical._BOOL" />
+-->
+        </init>
+      </service>
+
+    </services>
+  </servicemanager>
+  <tagmanager>
+    <tags>
+      <!-- Теги для передачи сообщений в модель -->
+      <tag name="itsRBC.ConnectionString" type="string" comment="">Data Source=clrbcsql.sib.evraz.com;Initial Catalog=ItsRbcPassportRelsa;Persist Security Info=True;User ID=sprav_edit;Password=sprav</tag>
+      <tag name="lnk100.ConnectionString" type="string" comment="">Data Source=10.47.22.20;Initial Catalog=ndt_rail;Persist Security Info=false;User ID=evraz;Password=evraz</tag>
+      <tag name="busy" type="int" default="0" comment=""/>
+      <tag name="lastTest" type="int" comment="ИД последнего теста"/>
+      <tag name="tests" type="string" comment="xml списка тестов"/>
+      <tag name="rbc.msggate.busy" type="int" value="0" comment="Признак загрузки очереди"/>
+      <!-- Теги для передачи сообщений в модель -->
+      <tag name="rbc.msggate.test" type="string" comment="Проверка для группы"/>
+      <!-- OPC теги -->
+      <tag name="tag001" type="int"/>
+      <!--
+      <tag name="tag002" type="bool"/>
+      <tag name="tag003" type="bool"/>
+      <tag name="tag004" type="bool"/>
+      <tag name="tag005" type="int"/>
+      <tag name="tag006" type="bool"/>
+      <tag name="tag007" type="bool"/>
+      <tag name="tag008" type="bool"/>
+      <tag name="tag009" type="int"/>
+      <tag name="tag010" type="bool"/>
+      <tag name="tag011" type="bool"/>
+      <tag name="tag012" type="bool"/>
+      <tag name="tag013" type="int"/>
+      <tag name="tag014" type="bool"/>
+      <tag name="tag015" type="bool"/>
+      <tag name="tag016" type="bool"/>
+      <tag name="tag017" type="int"/>
+      <tag name="tag018" type="bool"/>
+      <tag name="tag019" type="bool"/>
+      <tag name="tag020" type="bool"/>
+      <tag name="tag021" type="int"/>
+      <tag name="tag022" type="bool"/>
+      <tag name="tag023" type="bool"/>
+      <tag name="tag024" type="bool"/>
+      <tag name="tag025" type="int"/>
+      <tag name="tag026" type="bool"/>
+      <tag name="tag027" type="bool"/>
+      <tag name="tag028" type="bool"/>
+      <tag name="tag029" type="int"/>
+      <tag name="tag030" type="bool"/>
+      <tag name="tag031" type="bool"/>
+      <tag name="tag032" type="bool"/>
+      <tag name="tag033" type="int"/>
+      <tag name="tag034" type="bool"/>
+      <tag name="tag035" type="bool"/>
+      <tag name="tag036" type="bool"/>
+      <tag name="tag037" type="int"/>
+      <tag name="tag038" type="bool"/>
+      <tag name="tag039" type="bool"/>
+      <tag name="tag040" type="bool"/>
+      <tag name="tag041" type="int"/>
+      <tag name="tag042" type="bool"/>
+      <tag name="tag043" type="bool"/>
+      <tag name="tag044" type="bool"/>
+      <tag name="tag045" type="int"/>
+      <tag name="tag046" type="bool"/>
+      <tag name="tag047" type="bool"/>
+      <tag name="tag048" type="bool"/>
+      <tag name="tag049" type="int"/>
+      <tag name="tag050" type="bool"/>
+      <tag name="tag051" type="int"/>
+      <tag name="tag052" type="bool"/>
+      <tag name="tag053" type="bool"/>
+      <tag name="tag054" type="bool"/>
+      <tag name="tag055" type="int"/>
+      <tag name="tag056" type="bool"/>
+      <tag name="tag057" type="bool"/>
+      <tag name="tag058" type="bool"/>
+      <tag name="tag059" type="int"/>
+      <tag name="tag060" type="bool"/>
+      <tag name="tag061" type="int"/>
+      <tag name="tag062" type="bool"/>
+      <tag name="tag063" type="bool"/>
+      <tag name="tag064" type="bool"/>
+      <tag name="tag065" type="int"/>
+      <tag name="tag066" type="bool"/>
+      <tag name="tag067" type="bool"/>
+      <tag name="tag068" type="bool"/>
+      <tag name="tag069" type="int"/>
+      <tag name="tag070" type="bool"/>
+      <tag name="tag071" type="int"/>
+      <tag name="tag072" type="bool"/>
+      <tag name="tag073" type="bool"/>
+      <tag name="tag074" type="bool"/>
+      <tag name="tag075" type="int"/>
+      <tag name="tag076" type="bool"/>
+      <tag name="tag077" type="bool"/>
+      <tag name="tag078" type="bool"/>
+      <tag name="tag079" type="int"/>
+      <tag name="tag080" type="bool"/>
+      <tag name="tag081" type="int"/>
+      <tag name="tag082" type="bool"/>
+      <tag name="tag083" type="bool"/>
+      <tag name="tag084" type="bool"/>
+      <tag name="tag085" type="int"/>
+      <tag name="tag086" type="bool"/>
+      <tag name="tag087" type="bool"/>
+      <tag name="tag088" type="bool"/>
+      <tag name="tag089" type="int"/>
+      <tag name="tag090" type="bool"/>
+      <tag name="tag091" type="int"/>
+      <tag name="tag092" type="bool"/>
+      <tag name="tag093" type="bool"/>
+      <tag name="tag094" type="bool"/>
+      <tag name="tag095" type="int"/>
+      <tag name="tag096" type="bool"/>
+      <tag name="tag097" type="bool"/>
+      <tag name="tag098" type="bool"/>
+      <tag name="tag099" type="int"/>
+      <tag name="tag100" type="bool"/>
+      <tag name="tag101" type="int"/>
+      <tag name="tag102" type="bool"/>
+      <tag name="tag103" type="bool"/>
+      <tag name="tag104" type="bool"/>
+      <tag name="tag105" type="int"/>
+      <tag name="tag106" type="bool"/>
+      <tag name="tag107" type="bool"/>
+      <tag name="tag108" type="bool"/>
+      <tag name="tag109" type="int"/>
+      <tag name="tag110" type="bool"/>
+      <tag name="tag111" type="int"/>
+      <tag name="tag112" type="bool"/>
+      <tag name="tag113" type="bool"/>
+      <tag name="tag114" type="bool"/>
+      <tag name="tag115" type="int"/>
+      <tag name="tag116" type="bool"/>
+      <tag name="tag117" type="bool"/>
+      <tag name="tag118" type="bool"/>
+      <tag name="tag119" type="int"/>
+      <tag name="tag120" type="bool"/>
+      <tag name="tag121" type="int"/>
+      <tag name="tag122" type="bool"/>
+      <tag name="tag123" type="bool"/>
+      <tag name="tag124" type="bool"/>
+      <tag name="tag125" type="int"/>
+      <tag name="tag126" type="bool"/>
+      <tag name="tag127" type="bool"/>
+      <tag name="tag128" type="bool"/>
+      <tag name="tag129" type="int"/>
+      <tag name="tag130" type="bool"/>
+      <tag name="tag131" type="int"/>
+      <tag name="tag132" type="bool"/>
+      <tag name="tag133" type="bool"/>
+      <tag name="tag134" type="bool"/>
+      <tag name="tag135" type="int"/>
+      <tag name="tag136" type="bool"/>
+      <tag name="tag137" type="bool"/>
+      <tag name="tag138" type="bool"/>
+      <tag name="tag139" type="int"/>
+      <tag name="tag140" type="bool"/>
+      <tag name="tag141" type="int"/>
+      <tag name="tag142" type="bool"/>
+      <tag name="tag143" type="bool"/>
+      <tag name="tag144" type="bool"/>
+      <tag name="tag145" type="int"/>
+      <tag name="tag146" type="bool"/>
+      <tag name="tag147" type="bool"/>
+      <tag name="tag148" type="bool"/>
+      <tag name="tag149" type="int"/>
+      <tag name="tag150" type="bool"/>
+      <tag name="tag151" type="int"/>
+      <tag name="tag152" type="bool"/>
+      <tag name="tag153" type="bool"/>
+      <tag name="tag154" type="bool"/>
+      <tag name="tag155" type="int"/>
+      <tag name="tag156" type="bool"/>
+      <tag name="tag157" type="bool"/>
+      <tag name="tag158" type="bool"/>
+      <tag name="tag159" type="int"/>
+      <tag name="tag160" type="bool"/>
+      <tag name="tag161" type="int"/>
+      <tag name="tag162" type="bool"/>
+      <tag name="tag163" type="bool"/>
+      <tag name="tag164" type="bool"/>
+      <tag name="tag165" type="int"/>
+      <tag name="tag166" type="bool"/>
+      <tag name="tag167" type="bool"/>
+      <tag name="tag168" type="bool"/>
+      <tag name="tag169" type="int"/>
+      <tag name="tag170" type="bool"/>
+      <tag name="tag171" type="int"/>
+      <tag name="tag172" type="bool"/>
+      <tag name="tag173" type="bool"/>
+      <tag name="tag174" type="bool"/>
+      <tag name="tag175" type="int"/>
+      <tag name="tag176" type="bool"/>
+      <tag name="tag177" type="bool"/>
+      <tag name="tag178" type="bool"/>
+      <tag name="tag179" type="int"/>
+      <tag name="tag180" type="bool"/>
+      <tag name="tag181" type="int"/>
+      <tag name="tag182" type="bool"/>
+      <tag name="tag183" type="bool"/>
+      <tag name="tag184" type="bool"/>
+      <tag name="tag185" type="int"/>
+      <tag name="tag186" type="bool"/>
+      <tag name="tag187" type="bool"/>
+      <tag name="tag188" type="bool"/>
+      <tag name="tag189" type="int"/>
+      <tag name="tag190" type="bool"/>
+      <tag name="tag191" type="int"/>
+      <tag name="tag192" type="bool"/>
+      <tag name="tag193" type="bool"/>
+      <tag name="tag194" type="bool"/>
+      <tag name="tag195" type="int"/>
+      <tag name="tag196" type="bool"/>
+      <tag name="tag197" type="bool"/>
+      <tag name="tag198" type="bool"/>
+      <tag name="tag199" type="int"/>
+      <tag name="tag200" type="bool"/>
+      <tag name="tag201" type="int"/>
+      <tag name="tag202" type="bool"/>
+      <tag name="tag203" type="bool"/>
+      <tag name="tag204" type="bool"/>
+      <tag name="tag205" type="int"/>
+      <tag name="tag206" type="bool"/>
+      <tag name="tag207" type="bool"/>
+      <tag name="tag208" type="bool"/>
+      <tag name="tag209" type="int"/>
+      <tag name="tag210" type="bool"/>
+      <tag name="tag211" type="int"/>
+      <tag name="tag212" type="bool"/>
+      <tag name="tag213" type="bool"/>
+      <tag name="tag214" type="bool"/>
+      <tag name="tag215" type="int"/>
+      <tag name="tag216" type="bool"/>
+      <tag name="tag217" type="bool"/>
+      <tag name="tag218" type="bool"/>
+      <tag name="tag219" type="int"/>
+      <tag name="tag220" type="bool"/>
+      <tag name="tag221" type="int"/>
+      <tag name="tag222" type="bool"/>
+      <tag name="tag223" type="bool"/>
+      <tag name="tag224" type="bool"/>
+      <tag name="tag225" type="int"/>
+      <tag name="tag226" type="bool"/>
+      <tag name="tag227" type="bool"/>
+      <tag name="tag228" type="bool"/>
+      <tag name="tag229" type="int"/>
+      <tag name="tag230" type="bool"/>
+      <tag name="tag231" type="int"/>
+      <tag name="tag232" type="bool"/>
+      <tag name="tag233" type="bool"/>
+      <tag name="tag234" type="bool"/>
+      <tag name="tag235" type="int"/>
+      <tag name="tag236" type="bool"/>
+      <tag name="tag237" type="bool"/>
+      <tag name="tag238" type="bool"/>
+      <tag name="tag239" type="int"/>
+      <tag name="tag240" type="bool"/>
+      <tag name="tag241" type="int"/>
+      <tag name="tag242" type="bool"/>
+      <tag name="tag243" type="bool"/>
+      <tag name="tag244" type="bool"/>
+      <tag name="tag245" type="int"/>
+      <tag name="tag246" type="bool"/>
+      <tag name="tag247" type="bool"/>
+      <tag name="tag248" type="bool"/>
+      <tag name="tag249" type="int"/>
+      <tag name="tag250" type="bool"/>
+      <tag name="tag251" type="int"/>
+      <tag name="tag252" type="bool"/>
+      <tag name="tag253" type="bool"/>
+      <tag name="tag254" type="bool"/>
+      <tag name="tag255" type="int"/>
+      <tag name="tag256" type="bool"/>
+      <tag name="tag257" type="bool"/>
+      <tag name="tag258" type="bool"/>
+      <tag name="tag259" type="int"/>
+      <tag name="tag260" type="bool"/>
+      <tag name="tag261" type="int"/>
+      <tag name="tag262" type="bool"/>
+      <tag name="tag263" type="bool"/>
+      <tag name="tag264" type="bool"/>
+      <tag name="tag265" type="int"/>
+      <tag name="tag266" type="bool"/>
+      <tag name="tag267" type="bool"/>
+      <tag name="tag268" type="bool"/>
+      <tag name="tag269" type="int"/>
+      <tag name="tag270" type="bool"/>
+      <tag name="tag271" type="int"/>
+      <tag name="tag272" type="bool"/>
+      <tag name="tag273" type="bool"/>
+      <tag name="tag274" type="bool"/>
+      <tag name="tag275" type="int"/>
+      <tag name="tag276" type="bool"/>
+      <tag name="tag277" type="bool"/>
+      <tag name="tag278" type="bool"/>
+      <tag name="tag279" type="int"/>
+      <tag name="tag280" type="bool"/>
+      <tag name="tag281" type="int"/>
+      <tag name="tag282" type="bool"/>
+      <tag name="tag283" type="bool"/>
+      <tag name="tag284" type="bool"/>
+      <tag name="tag285" type="int"/>
+      <tag name="tag286" type="bool"/>
+      <tag name="tag287" type="bool"/>
+      <tag name="tag288" type="bool"/>
+      <tag name="tag289" type="int"/>
+      <tag name="tag290" type="bool"/>
+      <tag name="tag291" type="int"/>
+      <tag name="tag292" type="bool"/>
+      <tag name="tag293" type="bool"/>
+      <tag name="tag294" type="bool"/>
+      <tag name="tag295" type="int"/>
+      <tag name="tag296" type="bool"/>
+      <tag name="tag297" type="bool"/>
+      <tag name="tag298" type="bool"/>
+      <tag name="tag299" type="int"/>
+      <tag name="tag300" type="bool"/>
+      <tag name="tag301" type="int"/>
+      <tag name="tag302" type="bool"/>
+      <tag name="tag303" type="bool"/>
+      <tag name="tag304" type="bool"/>
+      <tag name="tag305" type="int"/>
+      <tag name="tag306" type="bool"/>
+      <tag name="tag307" type="bool"/>
+      <tag name="tag308" type="bool"/>
+      <tag name="tag309" type="int"/>
+      <tag name="tag310" type="bool"/>
+      <tag name="tag311" type="int"/>
+      <tag name="tag312" type="bool"/>
+      <tag name="tag313" type="bool"/>
+      <tag name="tag314" type="bool"/>
+      <tag name="tag315" type="int"/>
+      <tag name="tag316" type="bool"/>
+      <tag name="tag317" type="bool"/>
+      <tag name="tag318" type="bool"/>
+      <tag name="tag319" type="int"/>
+      <tag name="tag320" type="bool"/>
+      <tag name="tag321" type="int"/>
+      <tag name="tag322" type="bool"/>
+      <tag name="tag323" type="bool"/>
+      <tag name="tag324" type="bool"/>
+      <tag name="tag325" type="int"/>
+      <tag name="tag326" type="bool"/>
+      <tag name="tag327" type="bool"/>
+      <tag name="tag328" type="bool"/>
+      <tag name="tag329" type="int"/>
+      <tag name="tag330" type="bool"/>
+      <tag name="tag331" type="int"/>
+      <tag name="tag332" type="bool"/>
+      <tag name="tag333" type="bool"/>
+      <tag name="tag334" type="bool"/>
+      <tag name="tag335" type="int"/>
+      <tag name="tag336" type="bool"/>
+      <tag name="tag337" type="bool"/>
+      <tag name="tag338" type="bool"/>
+      <tag name="tag339" type="int"/>
+      <tag name="tag340" type="bool"/>
+      <tag name="tag341" type="int"/>
+      <tag name="tag342" type="bool"/>
+      <tag name="tag343" type="bool"/>
+      <tag name="tag344" type="bool"/>
+      <tag name="tag345" type="int"/>
+      <tag name="tag346" type="bool"/>
+      <tag name="tag347" type="bool"/>
+      <tag name="tag348" type="bool"/>
+      <tag name="tag349" type="int"/>
+      <tag name="tag350" type="bool"/>
+      <tag name="tag351" type="int"/>
+      <tag name="tag352" type="bool"/>
+      <tag name="tag353" type="bool"/>
+      <tag name="tag354" type="bool"/>
+      <tag name="tag355" type="int"/>
+      <tag name="tag356" type="bool"/>
+      <tag name="tag357" type="bool"/>
+      <tag name="tag358" type="bool"/>
+      <tag name="tag359" type="int"/>
+      <tag name="tag360" type="bool"/>
+      <tag name="tag361" type="int"/>
+      <tag name="tag362" type="bool"/>
+      <tag name="tag363" type="bool"/>
+      <tag name="tag364" type="bool"/>
+      <tag name="tag365" type="int"/>
+      <tag name="tag366" type="bool"/>
+      <tag name="tag367" type="bool"/>
+      <tag name="tag368" type="bool"/>
+      <tag name="tag369" type="int"/>
+      <tag name="tag370" type="bool"/>
+      <tag name="tag371" type="int"/>
+      <tag name="tag372" type="bool"/>
+      <tag name="tag373" type="bool"/>
+      <tag name="tag374" type="bool"/>
+      <tag name="tag375" type="int"/>
+      <tag name="tag376" type="bool"/>
+      <tag name="tag377" type="bool"/>
+      <tag name="tag378" type="bool"/>
+      <tag name="tag379" type="int"/>
+      <tag name="tag380" type="bool"/>
+      <tag name="tag381" type="int"/>
+      <tag name="tag382" type="bool"/>
+      <tag name="tag383" type="bool"/>
+      <tag name="tag384" type="bool"/>
+      <tag name="tag385" type="int"/>
+      <tag name="tag386" type="bool"/>
+      <tag name="tag387" type="bool"/>
+      <tag name="tag388" type="bool"/>
+      <tag name="tag389" type="int"/>
+      <tag name="tag390" type="bool"/>
+      <tag name="tag391" type="int"/>
+      <tag name="tag392" type="bool"/>
+      <tag name="tag393" type="bool"/>
+      <tag name="tag394" type="bool"/>
+      <tag name="tag395" type="int"/>
+      <tag name="tag396" type="bool"/>
+      <tag name="tag397" type="bool"/>
+      <tag name="tag398" type="bool"/>
+      <tag name="tag399" type="int"/>
+      <tag name="tag400" type="bool"/>
+      <tag name="tag401" type="int"/>
+      <tag name="tag402" type="bool"/>
+      <tag name="tag403" type="bool"/>
+      <tag name="tag404" type="bool"/>
+      <tag name="tag405" type="int"/>
+      <tag name="tag406" type="bool"/>
+      <tag name="tag407" type="bool"/>
+      <tag name="tag408" type="bool"/>
+      <tag name="tag409" type="int"/>
+      <tag name="tag410" type="bool"/>
+      <tag name="tag411" type="int"/>
+      <tag name="tag412" type="bool"/>
+      <tag name="tag413" type="bool"/>
+      <tag name="tag414" type="bool"/>
+      <tag name="tag415" type="int"/>
+      <tag name="tag416" type="bool"/>
+      <tag name="tag417" type="bool"/>
+      <tag name="tag418" type="bool"/>
+      <tag name="tag419" type="int"/>
+      <tag name="tag420" type="bool"/>
+      <tag name="tag421" type="int"/>
+      <tag name="tag422" type="bool"/>
+      <tag name="tag423" type="bool"/>
+      <tag name="tag424" type="bool"/>
+      <tag name="tag425" type="int"/>
+      <tag name="tag426" type="bool"/>
+      <tag name="tag427" type="bool"/>
+      <tag name="tag428" type="bool"/>
+      <tag name="tag429" type="int"/>
+      <tag name="tag430" type="bool"/>
+      <tag name="tag431" type="int"/>
+      <tag name="tag432" type="bool"/>
+      <tag name="tag433" type="bool"/>
+      <tag name="tag434" type="bool"/>
+      <tag name="tag435" type="int"/>
+      <tag name="tag436" type="bool"/>
+      <tag name="tag437" type="bool"/>
+      <tag name="tag438" type="bool"/>
+      <tag name="tag439" type="int"/>
+      <tag name="tag440" type="bool"/>
+      <tag name="tag441" type="int"/>
+      <tag name="tag442" type="bool"/>
+      <tag name="tag443" type="bool"/>
+      <tag name="tag444" type="bool"/>
+      <tag name="tag445" type="int"/>
+      <tag name="tag446" type="bool"/>
+      <tag name="tag447" type="bool"/>
+      <tag name="tag448" type="bool"/>
+      <tag name="tag449" type="int"/>
+      <tag name="tag450" type="bool"/>
+      <tag name="tag451" type="int"/>
+      <tag name="tag452" type="bool"/>
+      <tag name="tag453" type="bool"/>
+      <tag name="tag454" type="bool"/>
+      <tag name="tag455" type="int"/>
+      <tag name="tag456" type="bool"/>
+      <tag name="tag457" type="bool"/>
+      <tag name="tag458" type="bool"/>
+      <tag name="tag459" type="int"/>
+      <tag name="tag460" type="bool"/>
+      <tag name="tag461" type="int"/>
+      <tag name="tag462" type="bool"/>
+      <tag name="tag463" type="bool"/>
+      <tag name="tag464" type="bool"/>
+      <tag name="tag465" type="int"/>
+      <tag name="tag466" type="bool"/>
+      <tag name="tag467" type="bool"/>
+      <tag name="tag468" type="bool"/>
+      <tag name="tag469" type="int"/>
+      <tag name="tag470" type="bool"/>
+      <tag name="tag471" type="int"/>
+      <tag name="tag472" type="bool"/>
+      <tag name="tag473" type="bool"/>
+      <tag name="tag474" type="bool"/>
+      <tag name="tag475" type="int"/>
+      <tag name="tag476" type="bool"/>
+      <tag name="tag477" type="bool"/>
+      <tag name="tag478" type="bool"/>
+      <tag name="tag479" type="int"/>
+      <tag name="tag480" type="bool"/>
+      <tag name="tag481" type="int"/>
+      <tag name="tag482" type="bool"/>
+      <tag name="tag483" type="bool"/>
+      <tag name="tag484" type="bool"/>
+      <tag name="tag485" type="int"/>
+      <tag name="tag486" type="bool"/>
+      <tag name="tag487" type="bool"/>
+      <tag name="tag488" type="bool"/>
+      <tag name="tag489" type="int"/>
+      <tag name="tag490" type="bool"/>
+      <tag name="tag491" type="int"/>
+      <tag name="tag492" type="bool"/>
+      <tag name="tag493" type="bool"/>
+      <tag name="tag494" type="bool"/>
+      <tag name="tag495" type="int"/>
+      <tag name="tag496" type="bool"/>
+      <tag name="tag497" type="bool"/>
+      <tag name="tag498" type="bool"/>
+      <tag name="tag499" type="int"/>
+      <tag name="tag500" type="bool"/>
+      <tag name="tag501" type="int"/>
+      <tag name="tag502" type="bool"/>
+      <tag name="tag503" type="bool"/>
+      <tag name="tag504" type="bool"/>
+      <tag name="tag505" type="int"/>
+      <tag name="tag506" type="bool"/>
+      <tag name="tag507" type="bool"/>
+      <tag name="tag508" type="bool"/>
+      <tag name="tag509" type="int"/>
+      <tag name="tag510" type="bool"/>
+      <tag name="tag511" type="int"/>
+      <tag name="tag512" type="bool"/>
+      <tag name="tag513" type="bool"/>
+      <tag name="tag514" type="bool"/>
+      <tag name="tag515" type="int"/>
+      <tag name="tag516" type="bool"/>
+      <tag name="tag517" type="bool"/>
+      <tag name="tag518" type="bool"/>
+      <tag name="tag519" type="int"/>
+      <tag name="tag520" type="bool"/>
+      <tag name="tag521" type="int"/>
+      <tag name="tag522" type="bool"/>
+      <tag name="tag523" type="bool"/>
+      <tag name="tag524" type="bool"/>
+      <tag name="tag525" type="int"/>
+      <tag name="tag526" type="bool"/>
+      <tag name="tag527" type="bool"/>
+      <tag name="tag528" type="bool"/>
+      <tag name="tag529" type="int"/>
+      <tag name="tag530" type="bool"/>
+      <tag name="tag531" type="int"/>
+      <tag name="tag532" type="bool"/>
+      <tag name="tag533" type="bool"/>
+      <tag name="tag534" type="bool"/>
+      <tag name="tag535" type="int"/>
+      <tag name="tag536" type="bool"/>
+      <tag name="tag537" type="bool"/>
+      <tag name="tag538" type="bool"/>
+      <tag name="tag539" type="int"/>
+      <tag name="tag540" type="bool"/>
+      <tag name="tag541" type="int"/>
+      <tag name="tag542" type="bool"/>
+      <tag name="tag543" type="bool"/>
+      <tag name="tag544" type="bool"/>
+      <tag name="tag545" type="int"/>
+      <tag name="tag546" type="bool"/>
+      <tag name="tag547" type="bool"/>
+      <tag name="tag548" type="bool"/>
+      <tag name="tag549" type="int"/>
+      <tag name="tag550" type="bool"/>
+      <tag name="tag551" type="int"/>
+      <tag name="tag552" type="bool"/>
+      <tag name="tag553" type="bool"/>
+      <tag name="tag554" type="bool"/>
+      <tag name="tag555" type="int"/>
+      <tag name="tag556" type="bool"/>
+      <tag name="tag557" type="bool"/>
+      <tag name="tag558" type="bool"/>
+      <tag name="tag559" type="int"/>
+      <tag name="tag560" type="bool"/>
+      <tag name="tag561" type="int"/>
+      <tag name="tag562" type="bool"/>
+      <tag name="tag563" type="bool"/>
+      <tag name="tag564" type="bool"/>
+      <tag name="tag565" type="int"/>
+      <tag name="tag566" type="bool"/>
+      <tag name="tag567" type="bool"/>
+      <tag name="tag568" type="bool"/>
+      <tag name="tag569" type="int"/>
+      <tag name="tag570" type="bool"/>
+      <tag name="tag571" type="int"/>
+      <tag name="tag572" type="bool"/>
+      <tag name="tag573" type="bool"/>
+      <tag name="tag574" type="bool"/>
+      <tag name="tag575" type="int"/>
+      <tag name="tag576" type="bool"/>
+      <tag name="tag577" type="bool"/>
+      <tag name="tag578" type="bool"/>
+      <tag name="tag579" type="int"/>
+      <tag name="tag580" type="bool"/>
+      <tag name="tag581" type="int"/>
+      <tag name="tag582" type="bool"/>
+      <tag name="tag583" type="bool"/>
+      <tag name="tag584" type="bool"/>
+      <tag name="tag585" type="int"/>
+      <tag name="tag586" type="bool"/>
+      <tag name="tag587" type="bool"/>
+      <tag name="tag588" type="bool"/>
+      <tag name="tag589" type="int"/>
+      <tag name="tag590" type="bool"/>
+      <tag name="tag591" type="int"/>
+      <tag name="tag592" type="bool"/>
+      <tag name="tag593" type="bool"/>
+      <tag name="tag594" type="bool"/>
+      <tag name="tag595" type="int"/>
+      <tag name="tag596" type="bool"/>
+      <tag name="tag597" type="bool"/>
+      <tag name="tag598" type="bool"/>
+      <tag name="tag599" type="int"/>
+      <tag name="tag600" type="bool"/>
+      <tag name="tag601" type="int"/>
+      <tag name="tag602" type="bool"/>
+      <tag name="tag603" type="bool"/>
+      <tag name="tag604" type="bool"/>
+      <tag name="tag605" type="int"/>
+      <tag name="tag606" type="bool"/>
+      <tag name="tag607" type="bool"/>
+      <tag name="tag608" type="bool"/>
+      <tag name="tag609" type="int"/>
+      <tag name="tag610" type="bool"/>
+      <tag name="tag611" type="int"/>
+      <tag name="tag612" type="bool"/>
+      <tag name="tag613" type="bool"/>
+      <tag name="tag614" type="bool"/>
+      <tag name="tag615" type="int"/>
+      <tag name="tag616" type="bool"/>
+      <tag name="tag617" type="bool"/>
+      <tag name="tag618" type="bool"/>
+      <tag name="tag619" type="int"/>
+      <tag name="tag620" type="bool"/>
+      <tag name="tag621" type="int"/>
+      <tag name="tag622" type="bool"/>
+      <tag name="tag623" type="bool"/>
+      <tag name="tag624" type="bool"/>
+      <tag name="tag625" type="int"/>
+      <tag name="tag626" type="bool"/>
+      <tag name="tag627" type="bool"/>
+      <tag name="tag628" type="bool"/>
+      <tag name="tag629" type="int"/>
+      <tag name="tag630" type="bool"/>
+      <tag name="tag631" type="int"/>
+      <tag name="tag632" type="bool"/>
+      <tag name="tag633" type="bool"/>
+      <tag name="tag634" type="bool"/>
+      <tag name="tag635" type="int"/>
+      <tag name="tag636" type="bool"/>
+      <tag name="tag637" type="bool"/>
+      <tag name="tag638" type="bool"/>
+      <tag name="tag639" type="int"/>
+      <tag name="tag640" type="bool"/>
+      <tag name="tag641" type="int"/>
+      <tag name="tag642" type="bool"/>
+      <tag name="tag643" type="bool"/>
+      <tag name="tag644" type="bool"/>
+      <tag name="tag645" type="int"/>
+      <tag name="tag646" type="bool"/>
+      <tag name="tag647" type="bool"/>
+      <tag name="tag648" type="bool"/>
+      <tag name="tag649" type="int"/>
+      <tag name="tag650" type="bool"/>
+      <tag name="tag651" type="int"/>
+      <tag name="tag652" type="bool"/>
+      <tag name="tag653" type="bool"/>
+      <tag name="tag654" type="bool"/>
+      <tag name="tag655" type="int"/>
+      <tag name="tag656" type="bool"/>
+      <tag name="tag657" type="bool"/>
+      <tag name="tag658" type="bool"/>
+      <tag name="tag659" type="int"/>
+      <tag name="tag660" type="bool"/>
+      <tag name="tag661" type="int"/>
+      <tag name="tag662" type="bool"/>
+      <tag name="tag663" type="bool"/>
+      <tag name="tag664" type="bool"/>
+      <tag name="tag665" type="int"/>
+      <tag name="tag666" type="bool"/>
+      <tag name="tag667" type="bool"/>
+      <tag name="tag668" type="bool"/>
+      <tag name="tag669" type="int"/>
+      <tag name="tag670" type="bool"/>
+      <tag name="tag671" type="int"/>
+      <tag name="tag672" type="bool"/>
+      <tag name="tag673" type="bool"/>
+      <tag name="tag674" type="bool"/>
+      <tag name="tag675" type="int"/>
+      <tag name="tag676" type="bool"/>
+      <tag name="tag677" type="bool"/>
+      <tag name="tag678" type="bool"/>
+      <tag name="tag679" type="int"/>
+      <tag name="tag680" type="bool"/>
+      <tag name="tag681" type="int"/>
+      <tag name="tag682" type="bool"/>
+      <tag name="tag683" type="bool"/>
+      <tag name="tag684" type="bool"/>
+      <tag name="tag685" type="int"/>
+      <tag name="tag686" type="bool"/>
+      <tag name="tag687" type="bool"/>
+      <tag name="tag688" type="bool"/>
+      <tag name="tag689" type="int"/>
+      <tag name="tag690" type="bool"/>
+      <tag name="tag691" type="int"/>
+      <tag name="tag692" type="bool"/>
+      <tag name="tag693" type="bool"/>
+      <tag name="tag694" type="bool"/>
+      <tag name="tag695" type="int"/>
+      <tag name="tag696" type="bool"/>
+      <tag name="tag697" type="bool"/>
+      <tag name="tag698" type="bool"/>
+      <tag name="tag699" type="int"/>
+      <tag name="tag700" type="bool"/>
+      <tag name="tag701" type="int"/>
+      <tag name="tag702" type="bool"/>
+      <tag name="tag703" type="bool"/>
+      <tag name="tag704" type="bool"/>
+      <tag name="tag705" type="int"/>
+      <tag name="tag706" type="bool"/>
+      <tag name="tag707" type="bool"/>
+      <tag name="tag708" type="bool"/>
+      <tag name="tag709" type="int"/>
+      <tag name="tag710" type="bool"/>
+      <tag name="tag711" type="int"/>
+      <tag name="tag712" type="bool"/>
+      <tag name="tag713" type="bool"/>
+      <tag name="tag714" type="bool"/>
+      <tag name="tag715" type="int"/>
+      <tag name="tag716" type="bool"/>
+      <tag name="tag717" type="bool"/>
+      <tag name="tag718" type="bool"/>
+      <tag name="tag719" type="int"/>
+      <tag name="tag720" type="bool"/>
+      <tag name="tag721" type="int"/>
+      <tag name="tag722" type="bool"/>
+      <tag name="tag723" type="bool"/>
+      <tag name="tag724" type="bool"/>
+      <tag name="tag725" type="int"/>
+      <tag name="tag726" type="bool"/>
+      <tag name="tag727" type="bool"/>
+      <tag name="tag728" type="bool"/>
+      <tag name="tag729" type="int"/>
+      <tag name="tag730" type="bool"/>
+      <tag name="tag731" type="int"/>
+      <tag name="tag732" type="bool"/>
+      <tag name="tag733" type="bool"/>
+      <tag name="tag734" type="bool"/>
+      <tag name="tag735" type="int"/>
+      <tag name="tag736" type="bool"/>
+      <tag name="tag737" type="bool"/>
+      <tag name="tag738" type="bool"/>
+      <tag name="tag739" type="int"/>
+      <tag name="tag740" type="bool"/>
+      <tag name="tag741" type="int"/>
+      <tag name="tag742" type="bool"/>
+      <tag name="tag743" type="bool"/>
+      <tag name="tag744" type="bool"/>
+      <tag name="tag745" type="int"/>
+      <tag name="tag746" type="bool"/>
+      <tag name="tag747" type="bool"/>
+      <tag name="tag748" type="bool"/>
+      <tag name="tag749" type="int"/>
+      <tag name="tag750" type="bool"/>
+      <tag name="tag751" type="int"/>
+      <tag name="tag752" type="bool"/>
+      <tag name="tag753" type="bool"/>
+      <tag name="tag754" type="bool"/>
+      <tag name="tag755" type="int"/>
+      <tag name="tag756" type="bool"/>
+      <tag name="tag757" type="bool"/>
+      <tag name="tag758" type="bool"/>
+      <tag name="tag759" type="int"/>
+      <tag name="tag760" type="bool"/>
+      <tag name="tag761" type="int"/>
+      <tag name="tag762" type="bool"/>
+      <tag name="tag763" type="bool"/>
+      <tag name="tag764" type="bool"/>
+      <tag name="tag765" type="int"/>
+      <tag name="tag766" type="bool"/>
+      <tag name="tag767" type="bool"/>
+      <tag name="tag768" type="bool"/>
+      <tag name="tag769" type="int"/>
+      <tag name="tag770" type="bool"/>
+      <tag name="tag771" type="int"/>
+      <tag name="tag772" type="bool"/>
+      <tag name="tag773" type="bool"/>
+      <tag name="tag774" type="bool"/>
+      <tag name="tag775" type="int"/>
+      <tag name="tag776" type="bool"/>
+      <tag name="tag777" type="bool"/>
+      <tag name="tag778" type="bool"/>
+      <tag name="tag779" type="int"/>
+      <tag name="tag780" type="bool"/>
+      <tag name="tag781" type="int"/>
+      <tag name="tag782" type="bool"/>
+      <tag name="tag783" type="bool"/>
+      <tag name="tag784" type="bool"/>
+      <tag name="tag785" type="int"/>
+      <tag name="tag786" type="bool"/>
+      <tag name="tag787" type="bool"/>
+      <tag name="tag788" type="bool"/>
+      <tag name="tag789" type="int"/>
+      <tag name="tag790" type="bool"/>
+      <tag name="tag791" type="int"/>
+      <tag name="tag792" type="bool"/>
+      <tag name="tag793" type="bool"/>
+      <tag name="tag794" type="bool"/>
+      <tag name="tag795" type="int"/>
+      <tag name="tag796" type="bool"/>
+      <tag name="tag797" type="bool"/>
+      <tag name="tag798" type="bool"/>
+      <tag name="tag799" type="int"/>
+      <tag name="tag800" type="bool"/>
+      <tag name="tag801" type="int"/>
+      <tag name="tag802" type="bool"/>
+      <tag name="tag803" type="bool"/>
+      <tag name="tag804" type="bool"/>
+      <tag name="tag805" type="int"/>
+      <tag name="tag806" type="bool"/>
+      <tag name="tag807" type="bool"/>
+      <tag name="tag808" type="bool"/>
+      <tag name="tag809" type="int"/>
+      <tag name="tag810" type="bool"/>
+      <tag name="tag811" type="int"/>
+      <tag name="tag812" type="bool"/>
+      <tag name="tag813" type="bool"/>
+      <tag name="tag814" type="bool"/>
+      <tag name="tag815" type="int"/>
+      <tag name="tag816" type="bool"/>
+      <tag name="tag817" type="bool"/>
+      <tag name="tag818" type="bool"/>
+      <tag name="tag819" type="int"/>
+      <tag name="tag820" type="bool"/>
+      <tag name="tag821" type="int"/>
+      <tag name="tag822" type="bool"/>
+      <tag name="tag823" type="bool"/>
+      <tag name="tag824" type="bool"/>
+      <tag name="tag825" type="int"/>
+      <tag name="tag826" type="bool"/>
+      <tag name="tag827" type="bool"/>
+      <tag name="tag828" type="bool"/>
+      <tag name="tag829" type="int"/>
+      <tag name="tag830" type="bool"/>
+      <tag name="tag831" type="int"/>
+      <tag name="tag832" type="bool"/>
+      <tag name="tag833" type="bool"/>
+      <tag name="tag834" type="bool"/>
+      <tag name="tag835" type="int"/>
+      <tag name="tag836" type="bool"/>
+      <tag name="tag837" type="bool"/>
+      <tag name="tag838" type="bool"/>
+      <tag name="tag839" type="int"/>
+      <tag name="tag840" type="bool"/>
+      <tag name="tag841" type="int"/>
+      <tag name="tag842" type="bool"/>
+      <tag name="tag843" type="bool"/>
+      <tag name="tag844" type="bool"/>
+      <tag name="tag845" type="int"/>
+      <tag name="tag846" type="bool"/>
+      <tag name="tag847" type="bool"/>
+      <tag name="tag848" type="bool"/>
+      <tag name="tag849" type="int"/>
+      <tag name="tag850" type="bool"/>
+      <tag name="tag851" type="int"/>
+      <tag name="tag852" type="bool"/>
+      <tag name="tag853" type="bool"/>
+      <tag name="tag854" type="bool"/>
+      <tag name="tag855" type="int"/>
+      <tag name="tag856" type="bool"/>
+      <tag name="tag857" type="bool"/>
+      <tag name="tag858" type="bool"/>
+      <tag name="tag859" type="int"/>
+      <tag name="tag860" type="bool"/>
+      <tag name="tag861" type="int"/>
+      <tag name="tag862" type="bool"/>
+      <tag name="tag863" type="bool"/>
+      <tag name="tag864" type="bool"/>
+      <tag name="tag865" type="int"/>
+      <tag name="tag866" type="bool"/>
+      <tag name="tag867" type="bool"/>
+      <tag name="tag868" type="bool"/>
+      <tag name="tag869" type="int"/>
+      <tag name="tag870" type="bool"/>
+      <tag name="tag871" type="int"/>
+      <tag name="tag872" type="bool"/>
+      <tag name="tag873" type="bool"/>
+      <tag name="tag874" type="bool"/>
+      <tag name="tag875" type="int"/>
+      <tag name="tag876" type="bool"/>
+      <tag name="tag877" type="bool"/>
+      <tag name="tag878" type="bool"/>
+      <tag name="tag879" type="int"/>
+      <tag name="tag880" type="bool"/>
+      <tag name="tag881" type="int"/>
+      <tag name="tag882" type="bool"/>
+      <tag name="tag883" type="bool"/>
+      <tag name="tag884" type="bool"/>
+      <tag name="tag885" type="int"/>
+      <tag name="tag886" type="bool"/>
+      <tag name="tag887" type="bool"/>
+      <tag name="tag888" type="bool"/>
+      <tag name="tag889" type="int"/>
+      <tag name="tag890" type="bool"/>
+      <tag name="tag891" type="int"/>
+      <tag name="tag892" type="bool"/>
+      <tag name="tag893" type="bool"/>
+      <tag name="tag894" type="bool"/>
+      <tag name="tag895" type="int"/>
+      <tag name="tag896" type="bool"/>
+      <tag name="tag897" type="bool"/>
+      <tag name="tag898" type="bool"/>
+      <tag name="tag899" type="int"/>
+      <tag name="tag900" type="bool"/>
+      <tag name="tag901" type="int"/>
+      <tag name="tag902" type="bool"/>
+      <tag name="tag903" type="bool"/>
+      <tag name="tag904" type="bool"/>
+      <tag name="tag905" type="int"/>
+      <tag name="tag906" type="bool"/>
+      <tag name="tag907" type="bool"/>
+      <tag name="tag908" type="bool"/>
+      <tag name="tag909" type="int"/>
+      <tag name="tag910" type="bool"/>
+      <tag name="tag911" type="int"/>
+      <tag name="tag912" type="bool"/>
+      <tag name="tag913" type="bool"/>
+      <tag name="tag914" type="bool"/>
+      <tag name="tag915" type="int"/>
+      <tag name="tag916" type="bool"/>
+      <tag name="tag917" type="bool"/>
+      <tag name="tag918" type="bool"/>
+      <tag name="tag919" type="int"/>
+      <tag name="tag920" type="bool"/>
+      <tag name="tag921" type="int"/>
+      <tag name="tag922" type="bool"/>
+      <tag name="tag923" type="bool"/>
+      <tag name="tag924" type="bool"/>
+      <tag name="tag925" type="int"/>
+      <tag name="tag926" type="bool"/>
+      <tag name="tag927" type="bool"/>
+      <tag name="tag928" type="bool"/>
+      <tag name="tag929" type="int"/>
+      <tag name="tag930" type="bool"/>
+      <tag name="tag931" type="int"/>
+      <tag name="tag932" type="bool"/>
+      <tag name="tag933" type="bool"/>
+      <tag name="tag934" type="bool"/>
+      <tag name="tag935" type="int"/>
+      <tag name="tag936" type="bool"/>
+      <tag name="tag937" type="bool"/>
+      <tag name="tag938" type="bool"/>
+      <tag name="tag939" type="int"/>
+      <tag name="tag940" type="bool"/>
+      <tag name="tag941" type="int"/>
+      <tag name="tag942" type="bool"/>
+      <tag name="tag943" type="bool"/>
+      <tag name="tag944" type="bool"/>
+      <tag name="tag945" type="int"/>
+      <tag name="tag946" type="bool"/>
+      <tag name="tag947" type="bool"/>
+      <tag name="tag948" type="bool"/>
+      <tag name="tag949" type="int"/>
+      <tag name="tag950" type="bool"/>
+      <tag name="tag951" type="int"/>
+      <tag name="tag952" type="bool"/>
+      <tag name="tag953" type="bool"/>
+      <tag name="tag954" type="bool"/>
+      <tag name="tag955" type="int"/>
+      <tag name="tag956" type="bool"/>
+      <tag name="tag957" type="bool"/>
+      <tag name="tag958" type="bool"/>
+      <tag name="tag959" type="int"/>
+      <tag name="tag960" type="bool"/>
+      <tag name="tag961" type="int"/>
+      <tag name="tag962" type="bool"/>
+      <tag name="tag963" type="bool"/>
+      <tag name="tag964" type="bool"/>
+      <tag name="tag965" type="int"/>
+      <tag name="tag966" type="bool"/>
+      <tag name="tag967" type="bool"/>
+      <tag name="tag968" type="bool"/>
+      <tag name="tag969" type="int"/>
+      <tag name="tag970" type="bool"/>
+      <tag name="tag971" type="int"/>
+      <tag name="tag972" type="bool"/>
+      <tag name="tag973" type="bool"/>
+      <tag name="tag974" type="bool"/>
+      <tag name="tag975" type="int"/>
+      <tag name="tag976" type="bool"/>
+      <tag name="tag977" type="bool"/>
+      <tag name="tag978" type="bool"/>
+      <tag name="tag979" type="int"/>
+      <tag name="tag980" type="bool"/>
+      <tag name="tag981" type="int"/>
+      <tag name="tag982" type="bool"/>
+      <tag name="tag983" type="bool"/>
+      <tag name="tag984" type="bool"/>
+      <tag name="tag985" type="int"/>
+      <tag name="tag986" type="bool"/>
+      <tag name="tag987" type="bool"/>
+      <tag name="tag988" type="bool"/>
+      <tag name="tag989" type="int"/>
+      <tag name="tag990" type="bool"/>
+      <tag name="tag991" type="int"/>
+      <tag name="tag992" type="bool"/>
+      <tag name="tag993" type="bool"/>
+      <tag name="tag994" type="bool"/>
+      <tag name="tag995" type="int"/>
+      <tag name="tag996" type="bool"/>
+      <tag name="tag997" type="bool"/>
+      <tag name="tag998" type="bool"/>
+      <tag name="tag999" type="int"/>
+      <tag name="tag1000" type="bool"/>
+      -->
+      <!-- OPC теги -->
+    </tags>
+  </tagmanager>
+</matrix>

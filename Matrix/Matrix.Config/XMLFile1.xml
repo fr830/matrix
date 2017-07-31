@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<snapshot>
+<![CDATA[
+    <msg>
+        <description>
+        Формируйте шаблон, в квадратных [] скобках укажите имя тега как указано ниже.
+        В разделе <map> укажите имя тега для сохранения результата. 
+        </description>
+        <type>1</type>
+        <name>melt_mark_xa</name>
+        <id>[id]</id>
+    </msg>
+]]>
+</snapshot>
+<map name=""WINCCDB1.CURDB""/>

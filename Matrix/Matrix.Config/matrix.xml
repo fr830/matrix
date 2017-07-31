@@ -1,0 +1,1187 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<matrix>
+  <tagcache interval="1000" type="disk" path="logs/tags.xml;logs/tags.bak.xml" description="время обновления кэша в мс" />
+  <logmanager mode="nolog" description="Журналирование данных, допустимые mode: nolog|log|msmq">
+    <logfiles>
+      <logfile name="log1" path="logs\log1" size="32768" />
+      <logfile name="log2" path="logs\log2" size="32768" />
+      <logfile name="log3" path="logs\log3" size="32768" />
+    </logfiles>
+    <message name="message" path="logs/app.log" level="info" maxsize="65536" description="Журнал сообщений, допустимые level: console|debug|info|warn|error" />
+  </logmanager>
+  <tagstoremanager>
+    <tagstore mode="file" description="Настройки хранилища данных">
+      <init filename="logs/store.dat" delimiter=";" />
+    </tagstore>
+    <!--
+    <tagstore name="sql" mode="mssql">
+      <init rowpertran="200" connectionString="Data Source=asu-ora-tool;Initial Catalog=matrix;Integrated Security=True;Pooling=False" />
+    </tagstore>
+    <tagstore name="sql" mode="oracle">
+     <init rowpertran="200" connectionString="Data Source=asu-ora-tool;Persist Security Info=True;User ID=matrix;password=matrix;Unicode=True" />
+    </tagstore>
+-->
+  </tagstoremanager>
+  <servicemanager checkinterval="6000">
+    <services>
+      <!--
+      <service name="FerroAlloy" type="mssql">
+        <init interval="100" startif="[busy]=1" status="[busy]=0"
+        connectionString="Data Source=asu-tst-web1;Initial Catalog=FerroAlloy;Integrated Security=True;Pooling=true"
+            type="update" checkinterval="60000" description="query|scalar|update">
+          <query>
+            <![CDATA[
+				  insert into dbo.ProtocolWeight(
+            DateProtocol,IDScales,NumberProtocol,Weight,WeightTara,NumberTara)
+          values(@data,2,1,@vsbrut,@vstar,@ntar)
+				  ]]>
+          </query>
+          <param name="data" type="datetime" typeval="tag" value="data" description="typeval is tag|const"/>
+          <param name="vsbrut" type="float" typeval="tag" value="vsbrut" description="typeval is tag|const"/>
+          <param name="vstar" type="float" typeval="tag" value="vstar" description="typeval is tag|const"/>
+          <param name="ntar" type="int" typeval="tag" value="ntar" description="typeval is tag|const"/>
+        </init>
+      </service>
+      <service description="Шаблон сборного тега" name="MessageTemplate" type="group">
+        <init interval="10000" startif="" status=""
+            checkinterval="60000" >
+          <group>
+              <![CDATA[
+				      <msg>
+                <type>1</type>
+                <name>melt_mark_xa</name>
+                <id>[id]</id>
+                <data>[dt]</data>
+                <content>
+                  <sod_c>[sod_c]</sod_c>
+                  <sod_mn>[sod_mn]</sod_mn>
+                  <sod_si>[sod_si]</sod_si>
+                  <sod_p>[sod_p]</sod_p>
+                  <sod_s>[sod_s]</sod_s>
+                  <sod_cr>[sod_cr]</sod_cr>
+                  <sod_ni>[sod_ni]</sod_ni>
+                  <sod_cu>[sod_cu]</sod_cu>
+                  <sod_al>[sod_al]</sod_al>
+                  <sod_as>[sod_as]</sod_as>
+                  <sod_n>[sod_n]</sod_n>
+                  <sod_v>[sod_v]</sod_v>
+                  <sod_h>[sod_h]</sod_h>
+                  <sod_ti>[sod_ti]</sod_ti>
+                </content>
+              </msg>
+				      ]]>
+          </group>
+          <map name="WINCCDB1.CURDB"/>
+        </init>
+      </service>
+-->
+      <!--<service name="testExec" type="exec">
+        <init interval="5000" startif="" status=""
+            cmd="cscript" workdir="C:\Users\v_kuzugashev\Мои документы\Visual Studio 2010\Projects\Matrix\Matrix.Test\bin\Debug"  
+            checkinterval="60000" description="query|scalar|update">
+          <param name="arg0" type="string" typeval="val" value="/B"/>
+          <param name="arg1" type="string" typeval="val" value="test.js"/>
+          <param name="arg2" type="float" typeval="val" value="12.2765"/>
+          <map name="param1" type="var" value="param1"/>
+          <map name="param2" type="var" value="param2"/>
+          <map name="param3" type="var" value="param3"/>
+          <map name="param4" type="var" value="param5"/>
+        </init>
+      </service>-->
+      <service name="testExec" description="" type="exec" enabled="true">
+        <init beforeretry="60000" description="query|scalar|update" interval="5000" checkinterval="60000" keepalive="false" maxcycle="0" retry="3" retrypause="180000" startif="" status="" cmd="cscript" workdir="c:/temp">
+          <param name="arg0" type="string" typeval="val" value="/B" />
+          <param name="arg1" type="string" typeval="file" value="test10.js"><![CDATA[
+            WScript.StdOut.WriteLine("Arg[0]="+WScript.Arguments(0));
+            WScript.StdOut.WriteLine("RETURN");
+            WScript.StdOut.WriteLine("param1=1");
+            WScript.StdOut.WriteLine("param2=2.34");
+            WScript.StdOut.WriteLine("param3=4.5");
+            WScript.StdOut.WriteLine("param5=Hello world=Hhhh=hhhh!!!!");
+            ]]></param>
+          <param name="arg2" type="float" typeval="val" value="12.2765" />
+          <map name="param1" type="var" value="param1" />
+          <map name="param2" type="var" value="param2" />
+          <map name="param3" type="var" value="param3" />
+          <map name="param4" type="var" value="param5" />
+        </init>
+      </service>
+      <!--
+      <service name="OpcClientX" type="Matrix.Services.ServiceOPCSimaticNET" enabled="true" assembly="Matrix.Services.OPCSimaticNET.dll">
+        <init interval="1000" callback="false"  opcds="cache" progid="ICONICS.SimulatorOPCDA" host="localhost" group="testx" checkinterval="5000" keepalive="true">
+          <map name="tag001" opctag="Numeric._I2" />
+          <map name="tag002" opctag="Logical._BOOL" />
+          <map name="tag003" opctag="Logical._BOOL" />
+          <map name="tag004" opctag="Logical._BOOL" />
+          <map name="tag005" opctag="Numeric._I2" />
+          <map name="tag006" opctag="Logical._BOOL" />
+          <map name="tag007" opctag="Logical._BOOL" />
+          <map name="tag008" opctag="Logical._BOOL" />
+          <map name="tag009" opctag="Numeric._I2" />
+          <map name="tag010" opctag="Logical._BOOL" />
+          <map name="tag011" opctag="Logical._BOOL" />
+          <map name="tag012" opctag="Logical._BOOL" />
+          <map name="tag013" opctag="Numeric._I2" />
+          <map name="tag014" opctag="Logical._BOOL" />
+          <map name="tag015" opctag="Logical._BOOL" />
+          <map name="tag016" opctag="Logical._BOOL" />
+          <map name="tag017" opctag="Numeric._I2" />
+          <map name="tag018" opctag="Logical._BOOL" />
+          <map name="tag019" opctag="Logical._BOOL" />
+          <map name="tag020" opctag="Logical._BOOL" />
+          <map name="tag021" opctag="Numeric._I2" />
+          <map name="tag022" opctag="Logical._BOOL" />
+          <map name="tag023" opctag="Logical._BOOL" />
+          <map name="tag024" opctag="Logical._BOOL" />
+          <map name="tag025" opctag="Numeric._I2" />
+          <map name="tag026" opctag="Logical._BOOL" />
+          <map name="tag027" opctag="Logical._BOOL" />
+          <map name="tag028" opctag="Logical._BOOL" />
+          <map name="tag029" opctag="Numeric._I2" />
+          <map name="tag030" opctag="Logical._BOOL" />
+          <map name="tag031" opctag="Logical._BOOL" />
+          <map name="tag032" opctag="Logical._BOOL" />
+          <map name="tag033" opctag="Numeric._I2" />
+          <map name="tag034" opctag="Logical._BOOL" />
+          <map name="tag035" opctag="Logical._BOOL" />
+          <map name="tag036" opctag="Logical._BOOL" />
+          <map name="tag037" opctag="Numeric._I2" />
+          <map name="tag038" opctag="Logical._BOOL" />
+          <map name="tag039" opctag="Logical._BOOL" />
+          <map name="tag040" opctag="Logical._BOOL" />
+          <map name="tag041" opctag="Numeric._I2" />
+          <map name="tag042" opctag="Logical._BOOL" />
+          <map name="tag043" opctag="Logical._BOOL" />
+          <map name="tag044" opctag="Logical._BOOL" />
+          <map name="tag045" opctag="Numeric._I2" />
+          <map name="tag046" opctag="Logical._BOOL" />
+          <map name="tag047" opctag="Logical._BOOL" />
+          <map name="tag048" opctag="Logical._BOOL" />
+          <map name="tag049" opctag="Numeric._I2" />
+          <map name="tag050" opctag="Logical._BOOL" />
+          <map name="tag051" opctag="Logical._BOOL" />
+          <map name="tag052" opctag="Logical._BOOL" />
+          <map name="tag053" opctag="Numeric._I2" />
+          <map name="tag054" opctag="Logical._BOOL" />
+          <map name="tag055" opctag="Logical._BOOL" />
+          <map name="tag056" opctag="Logical._BOOL" />
+          <map name="tag057" opctag="Numeric._I2" />
+          <map name="tag058" opctag="Logical._BOOL" />
+          <map name="tag059" opctag="Logical._BOOL" />
+          <map name="tag060" opctag="Logical._BOOL" />
+          <map name="tag061" opctag="Logical._BOOL" />
+          <map name="tag062" opctag="Logical._BOOL" />
+          <map name="tag063" opctag="Numeric._I2" />
+          <map name="tag064" opctag="Logical._BOOL" />
+          <map name="tag065" opctag="Logical._BOOL" />
+          <map name="tag066" opctag="Logical._BOOL" />
+          <map name="tag067" opctag="Numeric._I2" />
+          <map name="tag068" opctag="Logical._BOOL" />
+          <map name="tag069" opctag="Logical._BOOL" />
+          <map name="tag070" opctag="Logical._BOOL" />
+          <map name="tag071" opctag="Logical._BOOL" />
+          <map name="tag072" opctag="Logical._BOOL" />
+          <map name="tag073" opctag="Numeric._I2" />
+          <map name="tag074" opctag="Logical._BOOL" />
+          <map name="tag075" opctag="Logical._BOOL" />
+          <map name="tag076" opctag="Logical._BOOL" />
+          <map name="tag077" opctag="Numeric._I2" />
+          <map name="tag078" opctag="Logical._BOOL" />
+          <map name="tag079" opctag="Logical._BOOL" />
+          <map name="tag080" opctag="Logical._BOOL" />
+          <map name="tag081" opctag="Logical._BOOL" />
+          <map name="tag082" opctag="Logical._BOOL" />
+          <map name="tag083" opctag="Numeric._I2" />
+          <map name="tag084" opctag="Logical._BOOL" />
+          <map name="tag085" opctag="Logical._BOOL" />
+          <map name="tag086" opctag="Logical._BOOL" />
+          <map name="tag087" opctag="Numeric._I2" />
+          <map name="tag088" opctag="Logical._BOOL" />
+          <map name="tag089" opctag="Logical._BOOL" />
+          <map name="tag090" opctag="Logical._BOOL" />
+          <map name="tag091" opctag="Logical._BOOL" />
+          <map name="tag092" opctag="Logical._BOOL" />
+          <map name="tag093" opctag="Numeric._I2" />
+          <map name="tag094" opctag="Logical._BOOL" />
+          <map name="tag095" opctag="Logical._BOOL" />
+          <map name="tag096" opctag="Logical._BOOL" />
+          <map name="tag097" opctag="Numeric._I2" />
+          <map name="tag098" opctag="Logical._BOOL" />
+          <map name="tag099" opctag="Logical._BOOL" />
+          <map name="tag100" opctag="Logical._BOOL" />
+        </init>
+      </service>
+      <service name="OpcClient1" type="Matrix.Services.ServiceOPCSimaticNET" enabled="false" assembly="Matrix.Services.OPCSimaticNET.dll">
+        <init interval="1000" callback="false" progid="ICONICS.SimulatorOPCDA" host="localhost" group="test1" checkinterval="5000" keepalive="true">
+          <map name="tag100" opctag="Logical._BOOL" />
+          <map name="tag102" opctag="Logical._BOOL" />
+          <map name="tag103" opctag="Numeric._I2" />
+          <map name="tag104" opctag="Logical._BOOL" />
+          <map name="tag105" opctag="Logical._BOOL" />
+          <map name="tag106" opctag="Logical._BOOL" />
+          <map name="tag107" opctag="Numeric._I2" />
+          <map name="tag108" opctag="Logical._BOOL" />
+          <map name="tag109" opctag="Logical._BOOL" />
+          <map name="tag110" opctag="Logical._BOOL" />
+          <map name="tag111" opctag="Logical._BOOL" />
+          <map name="tag112" opctag="Logical._BOOL" />
+          <map name="tag113" opctag="Numeric._I2" />
+          <map name="tag114" opctag="Logical._BOOL" />
+          <map name="tag115" opctag="Logical._BOOL" />
+          <map name="tag116" opctag="Logical._BOOL" />
+          <map name="tag117" opctag="Numeric._I2" />
+          <map name="tag118" opctag="Logical._BOOL" />
+          <map name="tag119" opctag="Logical._BOOL" />
+          <map name="tag120" opctag="Logical._BOOL" />
+          <map name="tag121" opctag="Logical._BOOL" />
+          <map name="tag122" opctag="Logical._BOOL" />
+          <map name="tag123" opctag="Numeric._I2" />
+          <map name="tag124" opctag="Logical._BOOL" />
+          <map name="tag125" opctag="Logical._BOOL" />
+          <map name="tag126" opctag="Logical._BOOL" />
+          <map name="tag127" opctag="Numeric._I2" />
+          <map name="tag128" opctag="Logical._BOOL" />
+          <map name="tag129" opctag="Logical._BOOL" />
+          <map name="tag130" opctag="Logical._BOOL" />
+          <map name="tag131" opctag="Logical._BOOL" />
+          <map name="tag132" opctag="Logical._BOOL" />
+          <map name="tag133" opctag="Numeric._I2" />
+          <map name="tag134" opctag="Logical._BOOL" />
+          <map name="tag135" opctag="Logical._BOOL" />
+          <map name="tag136" opctag="Logical._BOOL" />
+          <map name="tag137" opctag="Numeric._I2" />
+          <map name="tag138" opctag="Logical._BOOL" />
+          <map name="tag139" opctag="Logical._BOOL" />
+          <map name="tag140" opctag="Logical._BOOL" />
+          <map name="tag141" opctag="Logical._BOOL" />
+          <map name="tag142" opctag="Logical._BOOL" />
+          <map name="tag143" opctag="Numeric._I2" />
+          <map name="tag144" opctag="Logical._BOOL" />
+          <map name="tag145" opctag="Logical._BOOL" />
+          <map name="tag146" opctag="Logical._BOOL" />
+          <map name="tag147" opctag="Numeric._I2" />
+          <map name="tag148" opctag="Logical._BOOL" />
+          <map name="tag149" opctag="Logical._BOOL" />
+          <map name="tag150" opctag="Logical._BOOL" />
+          <map name="tag151" opctag="Logical._BOOL" />
+          <map name="tag152" opctag="Logical._BOOL" />
+          <map name="tag153" opctag="Numeric._I2" />
+          <map name="tag154" opctag="Logical._BOOL" />
+          <map name="tag155" opctag="Logical._BOOL" />
+          <map name="tag156" opctag="Logical._BOOL" />
+          <map name="tag157" opctag="Numeric._I2" />
+          <map name="tag158" opctag="Logical._BOOL" />
+          <map name="tag159" opctag="Logical._BOOL" />
+          <map name="tag160" opctag="Logical._BOOL" />
+          <map name="tag161" opctag="Logical._BOOL" />
+          <map name="tag162" opctag="Logical._BOOL" />
+          <map name="tag163" opctag="Numeric._I2" />
+          <map name="tag164" opctag="Logical._BOOL" />
+          <map name="tag165" opctag="Logical._BOOL" />
+          <map name="tag166" opctag="Logical._BOOL" />
+          <map name="tag167" opctag="Numeric._I2" />
+          <map name="tag168" opctag="Logical._BOOL" />
+          <map name="tag169" opctag="Logical._BOOL" />
+          <map name="tag170" opctag="Logical._BOOL" />
+          <map name="tag171" opctag="Logical._BOOL" />
+          <map name="tag172" opctag="Logical._BOOL" />
+          <map name="tag173" opctag="Numeric._I2" />
+          <map name="tag174" opctag="Logical._BOOL" />
+          <map name="tag175" opctag="Logical._BOOL" />
+          <map name="tag176" opctag="Logical._BOOL" />
+          <map name="tag177" opctag="Numeric._I2" />
+          <map name="tag178" opctag="Logical._BOOL" />
+          <map name="tag179" opctag="Logical._BOOL" />
+          <map name="tag180" opctag="Logical._BOOL" />
+          <map name="tag181" opctag="Logical._BOOL" />
+          <map name="tag182" opctag="Logical._BOOL" />
+          <map name="tag183" opctag="Numeric._I2" />
+          <map name="tag184" opctag="Logical._BOOL" />
+          <map name="tag185" opctag="Logical._BOOL" />
+          <map name="tag186" opctag="Logical._BOOL" />
+          <map name="tag187" opctag="Numeric._I2" />
+          <map name="tag188" opctag="Logical._BOOL" />
+          <map name="tag189" opctag="Logical._BOOL" />
+          <map name="tag190" opctag="Logical._BOOL" />
+          <map name="tag191" opctag="Logical._BOOL" />
+          <map name="tag192" opctag="Logical._BOOL" />
+          <map name="tag193" opctag="Numeric._I2" />
+          <map name="tag194" opctag="Logical._BOOL" />
+          <map name="tag195" opctag="Logical._BOOL" />
+          <map name="tag196" opctag="Logical._BOOL" />
+          <map name="tag197" opctag="Numeric._I2" />
+          <map name="tag198" opctag="Logical._BOOL" />
+          <map name="tag199" opctag="Logical._BOOL" />
+          <map name="tag200" opctag="Logical._BOOL" />
+        </init>
+      </service>
+      <service name="OpcClient2" type="Matrix.Services.ServiceOPCSimaticNET" enabled="false" assembly="Matrix.Services.OPCSimaticNET.dll">
+        <init interval="1000" callback="false" progid="ICONICS.SimulatorOPCDA" host="localhost" group="test2" checkinterval="5000" keepalive="true">
+          <map name="tag201" opctag="Numeric._I2" />
+          <map name="tag202" opctag="Logical._BOOL" />
+          <map name="tag203" opctag="Logical._BOOL" />
+          <map name="tag204" opctag="Logical._BOOL" />
+          <map name="tag205" opctag="Numeric._I2" />
+          <map name="tag206" opctag="Logical._BOOL" />
+          <map name="tag207" opctag="Logical._BOOL" />
+          <map name="tag208" opctag="Logical._BOOL" />
+          <map name="tag209" opctag="Numeric._I2" />
+          <map name="tag210" opctag="Logical._BOOL" />
+          <map name="tag211" opctag="Logical._BOOL" />
+          <map name="tag212" opctag="Logical._BOOL" />
+          <map name="tag213" opctag="Numeric._I2" />
+          <map name="tag214" opctag="Logical._BOOL" />
+          <map name="tag215" opctag="Logical._BOOL" />
+          <map name="tag216" opctag="Logical._BOOL" />
+          <map name="tag217" opctag="Numeric._I2" />
+          <map name="tag218" opctag="Logical._BOOL" />
+          <map name="tag219" opctag="Logical._BOOL" />
+          <map name="tag220" opctag="Logical._BOOL" />
+          <map name="tag221" opctag="Numeric._I2" />
+          <map name="tag222" opctag="Logical._BOOL" />
+          <map name="tag223" opctag="Logical._BOOL" />
+          <map name="tag224" opctag="Logical._BOOL" />
+          <map name="tag225" opctag="Numeric._I2" />
+          <map name="tag226" opctag="Logical._BOOL" />
+          <map name="tag227" opctag="Logical._BOOL" />
+          <map name="tag228" opctag="Logical._BOOL" />
+          <map name="tag229" opctag="Numeric._I2" />
+          <map name="tag230" opctag="Logical._BOOL" />
+          <map name="tag231" opctag="Logical._BOOL" />
+          <map name="tag232" opctag="Logical._BOOL" />
+          <map name="tag233" opctag="Numeric._I2" />
+          <map name="tag234" opctag="Logical._BOOL" />
+          <map name="tag235" opctag="Logical._BOOL" />
+          <map name="tag236" opctag="Logical._BOOL" />
+          <map name="tag237" opctag="Numeric._I2" />
+          <map name="tag238" opctag="Logical._BOOL" />
+          <map name="tag239" opctag="Logical._BOOL" />
+          <map name="tag240" opctag="Logical._BOOL" />
+          <map name="tag241" opctag="Numeric._I2" />
+          <map name="tag242" opctag="Logical._BOOL" />
+          <map name="tag243" opctag="Logical._BOOL" />
+          <map name="tag244" opctag="Logical._BOOL" />
+          <map name="tag245" opctag="Numeric._I2" />
+          <map name="tag246" opctag="Logical._BOOL" />
+          <map name="tag247" opctag="Logical._BOOL" />
+          <map name="tag248" opctag="Logical._BOOL" />
+          <map name="tag249" opctag="Numeric._I2" />
+          <map name="tag250" opctag="Logical._BOOL" />
+          <map name="tag251" opctag="Logical._BOOL" />
+          <map name="tag252" opctag="Logical._BOOL" />
+          <map name="tag253" opctag="Numeric._I2" />
+          <map name="tag254" opctag="Logical._BOOL" />
+          <map name="tag255" opctag="Logical._BOOL" />
+          <map name="tag256" opctag="Logical._BOOL" />
+          <map name="tag257" opctag="Numeric._I2" />
+          <map name="tag258" opctag="Logical._BOOL" />
+          <map name="tag259" opctag="Logical._BOOL" />
+          <map name="tag260" opctag="Logical._BOOL" />
+          <map name="tag261" opctag="Logical._BOOL" />
+          <map name="tag262" opctag="Logical._BOOL" />
+          <map name="tag263" opctag="Numeric._I2" />
+          <map name="tag264" opctag="Logical._BOOL" />
+          <map name="tag265" opctag="Logical._BOOL" />
+          <map name="tag266" opctag="Logical._BOOL" />
+          <map name="tag267" opctag="Numeric._I2" />
+          <map name="tag268" opctag="Logical._BOOL" />
+          <map name="tag269" opctag="Logical._BOOL" />
+          <map name="tag270" opctag="Logical._BOOL" />
+          <map name="tag271" opctag="Logical._BOOL" />
+          <map name="tag272" opctag="Logical._BOOL" />
+          <map name="tag273" opctag="Numeric._I2" />
+          <map name="tag274" opctag="Logical._BOOL" />
+          <map name="tag275" opctag="Logical._BOOL" />
+          <map name="tag276" opctag="Logical._BOOL" />
+          <map name="tag277" opctag="Numeric._I2" />
+          <map name="tag278" opctag="Logical._BOOL" />
+          <map name="tag279" opctag="Logical._BOOL" />
+          <map name="tag280" opctag="Logical._BOOL" />
+          <map name="tag281" opctag="Logical._BOOL" />
+          <map name="tag282" opctag="Logical._BOOL" />
+          <map name="tag283" opctag="Numeric._I2" />
+          <map name="tag284" opctag="Logical._BOOL" />
+          <map name="tag285" opctag="Logical._BOOL" />
+          <map name="tag286" opctag="Logical._BOOL" />
+          <map name="tag287" opctag="Numeric._I2" />
+          <map name="tag288" opctag="Logical._BOOL" />
+          <map name="tag289" opctag="Logical._BOOL" />
+          <map name="tag290" opctag="Logical._BOOL" />
+          <map name="tag291" opctag="Logical._BOOL" />
+          <map name="tag292" opctag="Logical._BOOL" />
+          <map name="tag293" opctag="Numeric._I2" />
+          <map name="tag294" opctag="Logical._BOOL" />
+          <map name="tag295" opctag="Logical._BOOL" />
+          <map name="tag296" opctag="Logical._BOOL" />
+          <map name="tag297" opctag="Numeric._I2" />
+          <map name="tag298" opctag="Logical._BOOL" />
+          <map name="tag299" opctag="Logical._BOOL" />
+          <map name="tag300" opctag="Logical._BOOL" />
+        </init>
+      </service>
+      <service name="OpcClient3" type="Matrix.Services.ServiceOPCSimaticNET" enabled="false" assembly="Matrix.Services.OPCSimaticNET.dll">
+        <init interval="1000" callback="false" progid="ICONICS.SimulatorOPCDA" host="localhost" group="test3" checkinterval="5000" keepalive="true">
+          <map name="tag301" opctag="Numeric._I2" />
+          <map name="tag302" opctag="Logical._BOOL" />
+          <map name="tag303" opctag="Logical._BOOL" />
+          <map name="tag304" opctag="Logical._BOOL" />
+          <map name="tag305" opctag="Numeric._I2" />
+          <map name="tag306" opctag="Logical._BOOL" />
+          <map name="tag307" opctag="Logical._BOOL" />
+          <map name="tag308" opctag="Logical._BOOL" />
+          <map name="tag309" opctag="Numeric._I2" />
+          <map name="tag310" opctag="Logical._BOOL" />
+          <map name="tag311" opctag="Logical._BOOL" />
+          <map name="tag312" opctag="Logical._BOOL" />
+          <map name="tag313" opctag="Numeric._I2" />
+          <map name="tag314" opctag="Logical._BOOL" />
+          <map name="tag315" opctag="Logical._BOOL" />
+          <map name="tag316" opctag="Logical._BOOL" />
+          <map name="tag317" opctag="Numeric._I2" />
+          <map name="tag318" opctag="Logical._BOOL" />
+          <map name="tag319" opctag="Logical._BOOL" />
+          <map name="tag320" opctag="Logical._BOOL" />
+          <map name="tag321" opctag="Numeric._I2" />
+          <map name="tag322" opctag="Logical._BOOL" />
+          <map name="tag323" opctag="Logical._BOOL" />
+          <map name="tag324" opctag="Logical._BOOL" />
+          <map name="tag325" opctag="Numeric._I2" />
+          <map name="tag326" opctag="Logical._BOOL" />
+          <map name="tag327" opctag="Logical._BOOL" />
+          <map name="tag328" opctag="Logical._BOOL" />
+          <map name="tag329" opctag="Numeric._I2" />
+          <map name="tag330" opctag="Logical._BOOL" />
+          <map name="tag331" opctag="Logical._BOOL" />
+          <map name="tag332" opctag="Logical._BOOL" />
+          <map name="tag333" opctag="Numeric._I2" />
+          <map name="tag334" opctag="Logical._BOOL" />
+          <map name="tag335" opctag="Logical._BOOL" />
+          <map name="tag336" opctag="Logical._BOOL" />
+          <map name="tag337" opctag="Numeric._I2" />
+          <map name="tag338" opctag="Logical._BOOL" />
+          <map name="tag339" opctag="Logical._BOOL" />
+          <map name="tag340" opctag="Logical._BOOL" />
+          <map name="tag341" opctag="Numeric._I2" />
+          <map name="tag342" opctag="Logical._BOOL" />
+          <map name="tag343" opctag="Logical._BOOL" />
+          <map name="tag344" opctag="Logical._BOOL" />
+          <map name="tag345" opctag="Numeric._I2" />
+          <map name="tag346" opctag="Logical._BOOL" />
+          <map name="tag347" opctag="Logical._BOOL" />
+          <map name="tag348" opctag="Logical._BOOL" />
+          <map name="tag349" opctag="Numeric._I2" />
+          <map name="tag350" opctag="Logical._BOOL" />
+          <map name="tag351" opctag="Logical._BOOL" />
+          <map name="tag352" opctag="Logical._BOOL" />
+          <map name="tag353" opctag="Numeric._I2" />
+          <map name="tag354" opctag="Logical._BOOL" />
+          <map name="tag355" opctag="Logical._BOOL" />
+          <map name="tag356" opctag="Logical._BOOL" />
+          <map name="tag357" opctag="Numeric._I2" />
+          <map name="tag358" opctag="Logical._BOOL" />
+          <map name="tag359" opctag="Logical._BOOL" />
+          <map name="tag360" opctag="Logical._BOOL" />
+          <map name="tag361" opctag="Logical._BOOL" />
+          <map name="tag362" opctag="Logical._BOOL" />
+          <map name="tag363" opctag="Numeric._I2" />
+          <map name="tag364" opctag="Logical._BOOL" />
+          <map name="tag365" opctag="Logical._BOOL" />
+          <map name="tag366" opctag="Logical._BOOL" />
+          <map name="tag367" opctag="Numeric._I2" />
+          <map name="tag368" opctag="Logical._BOOL" />
+          <map name="tag369" opctag="Logical._BOOL" />
+          <map name="tag370" opctag="Logical._BOOL" />
+          <map name="tag371" opctag="Logical._BOOL" />
+          <map name="tag372" opctag="Logical._BOOL" />
+          <map name="tag373" opctag="Numeric._I2" />
+          <map name="tag374" opctag="Logical._BOOL" />
+          <map name="tag375" opctag="Logical._BOOL" />
+          <map name="tag376" opctag="Logical._BOOL" />
+          <map name="tag377" opctag="Numeric._I2" />
+          <map name="tag378" opctag="Logical._BOOL" />
+          <map name="tag379" opctag="Logical._BOOL" />
+          <map name="tag380" opctag="Logical._BOOL" />
+          <map name="tag381" opctag="Logical._BOOL" />
+          <map name="tag382" opctag="Logical._BOOL" />
+          <map name="tag383" opctag="Numeric._I2" />
+          <map name="tag384" opctag="Logical._BOOL" />
+          <map name="tag385" opctag="Logical._BOOL" />
+          <map name="tag386" opctag="Logical._BOOL" />
+          <map name="tag387" opctag="Numeric._I2" />
+          <map name="tag388" opctag="Logical._BOOL" />
+          <map name="tag389" opctag="Logical._BOOL" />
+          <map name="tag390" opctag="Logical._BOOL" />
+          <map name="tag391" opctag="Logical._BOOL" />
+          <map name="tag392" opctag="Logical._BOOL" />
+          <map name="tag393" opctag="Numeric._I2" />
+          <map name="tag394" opctag="Logical._BOOL" />
+          <map name="tag395" opctag="Logical._BOOL" />
+          <map name="tag396" opctag="Logical._BOOL" />
+          <map name="tag397" opctag="Numeric._I2" />
+          <map name="tag398" opctag="Logical._BOOL" />
+          <map name="tag399" opctag="Logical._BOOL" />
+          <map name="tag400" opctag="Logical._BOOL" />
+        </init>
+      </service>
+      <service name="OpcClient4" type="Matrix.Services.ServiceOPCSimaticNET" enabled="false" assembly="Matrix.Services.OPCSimaticNET.dll">
+        <init interval="1000" callback="false" progid="ICONICS.SimulatorOPCDA" host="localhost" group="test4" checkinterval="5000" keepalive="true">
+          <map name="tag401" opctag="Numeric._I2" />
+          <map name="tag402" opctag="Logical._BOOL" />
+          <map name="tag403" opctag="Logical._BOOL" />
+          <map name="tag404" opctag="Logical._BOOL" />
+          <map name="tag405" opctag="Numeric._I2" />
+          <map name="tag406" opctag="Logical._BOOL" />
+          <map name="tag407" opctag="Logical._BOOL" />
+          <map name="tag408" opctag="Logical._BOOL" />
+          <map name="tag409" opctag="Numeric._I2" />
+          <map name="tag410" opctag="Logical._BOOL" />
+          <map name="tag411" opctag="Logical._BOOL" />
+          <map name="tag412" opctag="Logical._BOOL" />
+          <map name="tag413" opctag="Numeric._I2" />
+          <map name="tag414" opctag="Logical._BOOL" />
+          <map name="tag415" opctag="Logical._BOOL" />
+          <map name="tag416" opctag="Logical._BOOL" />
+          <map name="tag417" opctag="Numeric._I2" />
+          <map name="tag418" opctag="Logical._BOOL" />
+          <map name="tag419" opctag="Logical._BOOL" />
+          <map name="tag420" opctag="Logical._BOOL" />
+          <map name="tag421" opctag="Numeric._I2" />
+          <map name="tag422" opctag="Logical._BOOL" />
+          <map name="tag423" opctag="Logical._BOOL" />
+          <map name="tag424" opctag="Logical._BOOL" />
+          <map name="tag425" opctag="Numeric._I2" />
+          <map name="tag426" opctag="Logical._BOOL" />
+          <map name="tag427" opctag="Logical._BOOL" />
+          <map name="tag428" opctag="Logical._BOOL" />
+          <map name="tag429" opctag="Numeric._I2" />
+          <map name="tag430" opctag="Logical._BOOL" />
+          <map name="tag431" opctag="Logical._BOOL" />
+          <map name="tag432" opctag="Logical._BOOL" />
+          <map name="tag433" opctag="Numeric._I2" />
+          <map name="tag434" opctag="Logical._BOOL" />
+          <map name="tag435" opctag="Logical._BOOL" />
+          <map name="tag436" opctag="Logical._BOOL" />
+          <map name="tag437" opctag="Numeric._I2" />
+          <map name="tag438" opctag="Logical._BOOL" />
+          <map name="tag439" opctag="Logical._BOOL" />
+          <map name="tag440" opctag="Logical._BOOL" />
+          <map name="tag441" opctag="Numeric._I2" />
+          <map name="tag442" opctag="Logical._BOOL" />
+          <map name="tag443" opctag="Logical._BOOL" />
+          <map name="tag444" opctag="Logical._BOOL" />
+          <map name="tag445" opctag="Numeric._I2" />
+          <map name="tag446" opctag="Logical._BOOL" />
+          <map name="tag447" opctag="Logical._BOOL" />
+          <map name="tag448" opctag="Logical._BOOL" />
+          <map name="tag449" opctag="Numeric._I2" />
+          <map name="tag450" opctag="Logical._BOOL" />
+          <map name="tag451" opctag="Logical._BOOL" />
+          <map name="tag452" opctag="Logical._BOOL" />
+          <map name="tag453" opctag="Numeric._I2" />
+          <map name="tag454" opctag="Logical._BOOL" />
+          <map name="tag455" opctag="Logical._BOOL" />
+          <map name="tag456" opctag="Logical._BOOL" />
+          <map name="tag457" opctag="Numeric._I2" />
+          <map name="tag458" opctag="Logical._BOOL" />
+          <map name="tag459" opctag="Logical._BOOL" />
+          <map name="tag460" opctag="Logical._BOOL" />
+          <map name="tag461" opctag="Logical._BOOL" />
+          <map name="tag462" opctag="Logical._BOOL" />
+          <map name="tag463" opctag="Numeric._I2" />
+          <map name="tag464" opctag="Logical._BOOL" />
+          <map name="tag465" opctag="Logical._BOOL" />
+          <map name="tag466" opctag="Logical._BOOL" />
+          <map name="tag467" opctag="Numeric._I2" />
+          <map name="tag468" opctag="Logical._BOOL" />
+          <map name="tag469" opctag="Logical._BOOL" />
+          <map name="tag470" opctag="Logical._BOOL" />
+          <map name="tag471" opctag="Logical._BOOL" />
+          <map name="tag472" opctag="Logical._BOOL" />
+          <map name="tag473" opctag="Numeric._I2" />
+          <map name="tag474" opctag="Logical._BOOL" />
+          <map name="tag475" opctag="Logical._BOOL" />
+          <map name="tag476" opctag="Logical._BOOL" />
+          <map name="tag477" opctag="Numeric._I2" />
+          <map name="tag478" opctag="Logical._BOOL" />
+          <map name="tag479" opctag="Logical._BOOL" />
+          <map name="tag480" opctag="Logical._BOOL" />
+          <map name="tag481" opctag="Logical._BOOL" />
+          <map name="tag482" opctag="Logical._BOOL" />
+          <map name="tag483" opctag="Numeric._I2" />
+          <map name="tag484" opctag="Logical._BOOL" />
+          <map name="tag485" opctag="Logical._BOOL" />
+          <map name="tag486" opctag="Logical._BOOL" />
+          <map name="tag487" opctag="Numeric._I2" />
+          <map name="tag488" opctag="Logical._BOOL" />
+          <map name="tag489" opctag="Logical._BOOL" />
+          <map name="tag490" opctag="Logical._BOOL" />
+          <map name="tag491" opctag="Logical._BOOL" />
+          <map name="tag492" opctag="Logical._BOOL" />
+          <map name="tag493" opctag="Numeric._I2" />
+          <map name="tag494" opctag="Logical._BOOL" />
+          <map name="tag495" opctag="Logical._BOOL" />
+          <map name="tag496" opctag="Logical._BOOL" />
+          <map name="tag497" opctag="Numeric._I2" />
+          <map name="tag498" opctag="Logical._BOOL" />
+          <map name="tag499" opctag="Logical._BOOL" />
+          <map name="tag500" opctag="Logical._BOOL" />
+        </init>
+      </service>
+      <service name="OpcClient5" type="Matrix.Services.ServiceOPCSimaticNET" enabled="false" assembly="Matrix.Services.OPCSimaticNET.dll">
+        <init interval="1000" callback="false" progid="ICONICS.SimulatorOPCDA" host="localhost" group="test5" checkinterval="5000" keepalive="true">
+          <map name="tag501" opctag="Numeric._I2" />
+          <map name="tag502" opctag="Logical._BOOL" />
+          <map name="tag503" opctag="Logical._BOOL" />
+          <map name="tag504" opctag="Logical._BOOL" />
+          <map name="tag505" opctag="Numeric._I2" />
+          <map name="tag506" opctag="Logical._BOOL" />
+          <map name="tag507" opctag="Logical._BOOL" />
+          <map name="tag508" opctag="Logical._BOOL" />
+          <map name="tag509" opctag="Numeric._I2" />
+          <map name="tag510" opctag="Logical._BOOL" />
+          <map name="tag511" opctag="Logical._BOOL" />
+          <map name="tag512" opctag="Logical._BOOL" />
+          <map name="tag513" opctag="Numeric._I2" />
+          <map name="tag514" opctag="Logical._BOOL" />
+          <map name="tag515" opctag="Logical._BOOL" />
+          <map name="tag516" opctag="Logical._BOOL" />
+          <map name="tag517" opctag="Numeric._I2" />
+          <map name="tag518" opctag="Logical._BOOL" />
+          <map name="tag519" opctag="Logical._BOOL" />
+          <map name="tag520" opctag="Logical._BOOL" />
+          <map name="tag521" opctag="Numeric._I2" />
+          <map name="tag522" opctag="Logical._BOOL" />
+          <map name="tag523" opctag="Logical._BOOL" />
+          <map name="tag524" opctag="Logical._BOOL" />
+          <map name="tag525" opctag="Numeric._I2" />
+          <map name="tag526" opctag="Logical._BOOL" />
+          <map name="tag527" opctag="Logical._BOOL" />
+          <map name="tag528" opctag="Logical._BOOL" />
+          <map name="tag529" opctag="Numeric._I2" />
+          <map name="tag530" opctag="Logical._BOOL" />
+          <map name="tag531" opctag="Logical._BOOL" />
+          <map name="tag532" opctag="Logical._BOOL" />
+          <map name="tag533" opctag="Numeric._I2" />
+          <map name="tag534" opctag="Logical._BOOL" />
+          <map name="tag535" opctag="Logical._BOOL" />
+          <map name="tag536" opctag="Logical._BOOL" />
+          <map name="tag537" opctag="Numeric._I2" />
+          <map name="tag538" opctag="Logical._BOOL" />
+          <map name="tag539" opctag="Logical._BOOL" />
+          <map name="tag540" opctag="Logical._BOOL" />
+          <map name="tag541" opctag="Numeric._I2" />
+          <map name="tag542" opctag="Logical._BOOL" />
+          <map name="tag543" opctag="Logical._BOOL" />
+          <map name="tag544" opctag="Logical._BOOL" />
+          <map name="tag545" opctag="Numeric._I2" />
+          <map name="tag546" opctag="Logical._BOOL" />
+          <map name="tag547" opctag="Logical._BOOL" />
+          <map name="tag548" opctag="Logical._BOOL" />
+          <map name="tag549" opctag="Numeric._I2" />
+          <map name="tag550" opctag="Logical._BOOL" />
+          <map name="tag551" opctag="Logical._BOOL" />
+          <map name="tag552" opctag="Logical._BOOL" />
+          <map name="tag553" opctag="Numeric._I2" />
+          <map name="tag554" opctag="Logical._BOOL" />
+          <map name="tag555" opctag="Logical._BOOL" />
+          <map name="tag556" opctag="Logical._BOOL" />
+          <map name="tag557" opctag="Numeric._I2" />
+          <map name="tag558" opctag="Logical._BOOL" />
+          <map name="tag559" opctag="Logical._BOOL" />
+          <map name="tag560" opctag="Logical._BOOL" />
+          <map name="tag561" opctag="Logical._BOOL" />
+          <map name="tag562" opctag="Logical._BOOL" />
+          <map name="tag563" opctag="Numeric._I2" />
+          <map name="tag564" opctag="Logical._BOOL" />
+          <map name="tag565" opctag="Logical._BOOL" />
+          <map name="tag566" opctag="Logical._BOOL" />
+          <map name="tag567" opctag="Numeric._I2" />
+          <map name="tag568" opctag="Logical._BOOL" />
+          <map name="tag569" opctag="Logical._BOOL" />
+          <map name="tag570" opctag="Logical._BOOL" />
+          <map name="tag571" opctag="Logical._BOOL" />
+          <map name="tag572" opctag="Logical._BOOL" />
+          <map name="tag573" opctag="Numeric._I2" />
+          <map name="tag574" opctag="Logical._BOOL" />
+          <map name="tag575" opctag="Logical._BOOL" />
+          <map name="tag576" opctag="Logical._BOOL" />
+          <map name="tag577" opctag="Numeric._I2" />
+          <map name="tag578" opctag="Logical._BOOL" />
+          <map name="tag579" opctag="Logical._BOOL" />
+          <map name="tag580" opctag="Logical._BOOL" />
+          <map name="tag581" opctag="Logical._BOOL" />
+          <map name="tag582" opctag="Logical._BOOL" />
+          <map name="tag583" opctag="Numeric._I2" />
+          <map name="tag584" opctag="Logical._BOOL" />
+          <map name="tag585" opctag="Logical._BOOL" />
+          <map name="tag586" opctag="Logical._BOOL" />
+          <map name="tag587" opctag="Numeric._I2" />
+          <map name="tag588" opctag="Logical._BOOL" />
+          <map name="tag589" opctag="Logical._BOOL" />
+          <map name="tag590" opctag="Logical._BOOL" />
+          <map name="tag591" opctag="Logical._BOOL" />
+          <map name="tag592" opctag="Logical._BOOL" />
+          <map name="tag593" opctag="Numeric._I2" />
+          <map name="tag594" opctag="Logical._BOOL" />
+          <map name="tag595" opctag="Logical._BOOL" />
+          <map name="tag596" opctag="Logical._BOOL" />
+          <map name="tag597" opctag="Numeric._I2" />
+          <map name="tag598" opctag="Logical._BOOL" />
+          <map name="tag599" opctag="Logical._BOOL" />
+          <map name="tag600" opctag="Logical._BOOL" />
+        </init>
+      </service>
+      <service name="OpcClient6" type="Matrix.Services.ServiceOPCSimaticNET" enabled="false" assembly="Matrix.Services.OPCSimaticNET.dll">
+        <init interval="1000" callback="false" progid="ICONICS.SimulatorOPCDA" host="localhost" group="test6" checkinterval="5000" keepalive="true">
+          <map name="tag601" opctag="Numeric._I2" />
+          <map name="tag602" opctag="Logical._BOOL" />
+          <map name="tag603" opctag="Logical._BOOL" />
+          <map name="tag604" opctag="Logical._BOOL" />
+          <map name="tag605" opctag="Numeric._I2" />
+          <map name="tag606" opctag="Logical._BOOL" />
+          <map name="tag607" opctag="Logical._BOOL" />
+          <map name="tag608" opctag="Logical._BOOL" />
+          <map name="tag609" opctag="Numeric._I2" />
+          <map name="tag610" opctag="Logical._BOOL" />
+          <map name="tag611" opctag="Logical._BOOL" />
+          <map name="tag612" opctag="Logical._BOOL" />
+          <map name="tag613" opctag="Numeric._I2" />
+          <map name="tag614" opctag="Logical._BOOL" />
+          <map name="tag615" opctag="Logical._BOOL" />
+          <map name="tag616" opctag="Logical._BOOL" />
+          <map name="tag617" opctag="Numeric._I2" />
+          <map name="tag618" opctag="Logical._BOOL" />
+          <map name="tag619" opctag="Logical._BOOL" />
+          <map name="tag620" opctag="Logical._BOOL" />
+          <map name="tag621" opctag="Numeric._I2" />
+          <map name="tag622" opctag="Logical._BOOL" />
+          <map name="tag623" opctag="Logical._BOOL" />
+          <map name="tag624" opctag="Logical._BOOL" />
+          <map name="tag625" opctag="Numeric._I2" />
+          <map name="tag626" opctag="Logical._BOOL" />
+          <map name="tag627" opctag="Logical._BOOL" />
+          <map name="tag628" opctag="Logical._BOOL" />
+          <map name="tag629" opctag="Numeric._I2" />
+          <map name="tag630" opctag="Logical._BOOL" />
+          <map name="tag631" opctag="Logical._BOOL" />
+          <map name="tag632" opctag="Logical._BOOL" />
+          <map name="tag633" opctag="Numeric._I2" />
+          <map name="tag634" opctag="Logical._BOOL" />
+          <map name="tag635" opctag="Logical._BOOL" />
+          <map name="tag636" opctag="Logical._BOOL" />
+          <map name="tag637" opctag="Numeric._I2" />
+          <map name="tag638" opctag="Logical._BOOL" />
+          <map name="tag639" opctag="Logical._BOOL" />
+          <map name="tag640" opctag="Logical._BOOL" />
+          <map name="tag641" opctag="Numeric._I2" />
+          <map name="tag642" opctag="Logical._BOOL" />
+          <map name="tag643" opctag="Logical._BOOL" />
+          <map name="tag644" opctag="Logical._BOOL" />
+          <map name="tag645" opctag="Numeric._I2" />
+          <map name="tag646" opctag="Logical._BOOL" />
+          <map name="tag647" opctag="Logical._BOOL" />
+          <map name="tag648" opctag="Logical._BOOL" />
+          <map name="tag649" opctag="Numeric._I2" />
+          <map name="tag650" opctag="Logical._BOOL" />
+          <map name="tag651" opctag="Logical._BOOL" />
+          <map name="tag652" opctag="Logical._BOOL" />
+          <map name="tag653" opctag="Numeric._I2" />
+          <map name="tag654" opctag="Logical._BOOL" />
+          <map name="tag655" opctag="Logical._BOOL" />
+          <map name="tag656" opctag="Logical._BOOL" />
+          <map name="tag657" opctag="Numeric._I2" />
+          <map name="tag658" opctag="Logical._BOOL" />
+          <map name="tag659" opctag="Logical._BOOL" />
+          <map name="tag660" opctag="Logical._BOOL" />
+          <map name="tag661" opctag="Logical._BOOL" />
+          <map name="tag662" opctag="Logical._BOOL" />
+          <map name="tag663" opctag="Numeric._I2" />
+          <map name="tag664" opctag="Logical._BOOL" />
+          <map name="tag665" opctag="Logical._BOOL" />
+          <map name="tag666" opctag="Logical._BOOL" />
+          <map name="tag667" opctag="Numeric._I2" />
+          <map name="tag668" opctag="Logical._BOOL" />
+          <map name="tag669" opctag="Logical._BOOL" />
+          <map name="tag670" opctag="Logical._BOOL" />
+          <map name="tag671" opctag="Logical._BOOL" />
+          <map name="tag672" opctag="Logical._BOOL" />
+          <map name="tag673" opctag="Numeric._I2" />
+          <map name="tag674" opctag="Logical._BOOL" />
+          <map name="tag675" opctag="Logical._BOOL" />
+          <map name="tag676" opctag="Logical._BOOL" />
+          <map name="tag677" opctag="Numeric._I2" />
+          <map name="tag678" opctag="Logical._BOOL" />
+          <map name="tag679" opctag="Logical._BOOL" />
+          <map name="tag680" opctag="Logical._BOOL" />
+          <map name="tag681" opctag="Logical._BOOL" />
+          <map name="tag682" opctag="Logical._BOOL" />
+          <map name="tag683" opctag="Numeric._I2" />
+          <map name="tag684" opctag="Logical._BOOL" />
+          <map name="tag685" opctag="Logical._BOOL" />
+          <map name="tag686" opctag="Logical._BOOL" />
+          <map name="tag687" opctag="Numeric._I2" />
+          <map name="tag688" opctag="Logical._BOOL" />
+          <map name="tag689" opctag="Logical._BOOL" />
+          <map name="tag690" opctag="Logical._BOOL" />
+          <map name="tag691" opctag="Logical._BOOL" />
+          <map name="tag692" opctag="Logical._BOOL" />
+          <map name="tag693" opctag="Numeric._I2" />
+          <map name="tag694" opctag="Logical._BOOL" />
+          <map name="tag695" opctag="Logical._BOOL" />
+          <map name="tag696" opctag="Logical._BOOL" />
+          <map name="tag697" opctag="Numeric._I2" />
+          <map name="tag698" opctag="Logical._BOOL" />
+          <map name="tag699" opctag="Logical._BOOL" />
+          <map name="tag700" opctag="Logical._BOOL" />
+        </init>
+      </service>
+      <service name="OpcClient7" type="Matrix.Services.ServiceOPCSimaticNET" enabled="false" assembly="Matrix.Services.OPCSimaticNET.dll">
+        <init interval="1000" callback="false" progid="ICONICS.SimulatorOPCDA" host="localhost" group="test7" checkinterval="5000" keepalive="true">
+          <map name="tag701" opctag="Numeric._I2" />
+          <map name="tag702" opctag="Logical._BOOL" />
+          <map name="tag703" opctag="Logical._BOOL" />
+          <map name="tag704" opctag="Logical._BOOL" />
+          <map name="tag705" opctag="Numeric._I2" />
+          <map name="tag706" opctag="Logical._BOOL" />
+          <map name="tag707" opctag="Logical._BOOL" />
+          <map name="tag708" opctag="Logical._BOOL" />
+          <map name="tag709" opctag="Numeric._I2" />
+          <map name="tag710" opctag="Logical._BOOL" />
+          <map name="tag711" opctag="Logical._BOOL" />
+          <map name="tag712" opctag="Logical._BOOL" />
+          <map name="tag713" opctag="Numeric._I2" />
+          <map name="tag714" opctag="Logical._BOOL" />
+          <map name="tag715" opctag="Logical._BOOL" />
+          <map name="tag716" opctag="Logical._BOOL" />
+          <map name="tag717" opctag="Numeric._I2" />
+          <map name="tag718" opctag="Logical._BOOL" />
+          <map name="tag719" opctag="Logical._BOOL" />
+          <map name="tag720" opctag="Logical._BOOL" />
+          <map name="tag721" opctag="Numeric._I2" />
+          <map name="tag722" opctag="Logical._BOOL" />
+          <map name="tag723" opctag="Logical._BOOL" />
+          <map name="tag724" opctag="Logical._BOOL" />
+          <map name="tag725" opctag="Numeric._I2" />
+          <map name="tag726" opctag="Logical._BOOL" />
+          <map name="tag727" opctag="Logical._BOOL" />
+          <map name="tag728" opctag="Logical._BOOL" />
+          <map name="tag729" opctag="Numeric._I2" />
+          <map name="tag730" opctag="Logical._BOOL" />
+          <map name="tag731" opctag="Logical._BOOL" />
+          <map name="tag732" opctag="Logical._BOOL" />
+          <map name="tag733" opctag="Numeric._I2" />
+          <map name="tag734" opctag="Logical._BOOL" />
+          <map name="tag735" opctag="Logical._BOOL" />
+          <map name="tag736" opctag="Logical._BOOL" />
+          <map name="tag737" opctag="Numeric._I2" />
+          <map name="tag738" opctag="Logical._BOOL" />
+          <map name="tag739" opctag="Logical._BOOL" />
+          <map name="tag740" opctag="Logical._BOOL" />
+          <map name="tag741" opctag="Numeric._I2" />
+          <map name="tag742" opctag="Logical._BOOL" />
+          <map name="tag743" opctag="Logical._BOOL" />
+          <map name="tag744" opctag="Logical._BOOL" />
+          <map name="tag745" opctag="Numeric._I2" />
+          <map name="tag746" opctag="Logical._BOOL" />
+          <map name="tag747" opctag="Logical._BOOL" />
+          <map name="tag748" opctag="Logical._BOOL" />
+          <map name="tag749" opctag="Numeric._I2" />
+          <map name="tag750" opctag="Logical._BOOL" />
+          <map name="tag751" opctag="Logical._BOOL" />
+          <map name="tag752" opctag="Logical._BOOL" />
+          <map name="tag753" opctag="Numeric._I2" />
+          <map name="tag754" opctag="Logical._BOOL" />
+          <map name="tag755" opctag="Logical._BOOL" />
+          <map name="tag756" opctag="Logical._BOOL" />
+          <map name="tag757" opctag="Numeric._I2" />
+          <map name="tag758" opctag="Logical._BOOL" />
+          <map name="tag759" opctag="Logical._BOOL" />
+          <map name="tag760" opctag="Logical._BOOL" />
+          <map name="tag761" opctag="Logical._BOOL" />
+          <map name="tag762" opctag="Logical._BOOL" />
+          <map name="tag763" opctag="Numeric._I2" />
+          <map name="tag764" opctag="Logical._BOOL" />
+          <map name="tag765" opctag="Logical._BOOL" />
+          <map name="tag766" opctag="Logical._BOOL" />
+          <map name="tag767" opctag="Numeric._I2" />
+          <map name="tag768" opctag="Logical._BOOL" />
+          <map name="tag769" opctag="Logical._BOOL" />
+          <map name="tag770" opctag="Logical._BOOL" />
+          <map name="tag771" opctag="Logical._BOOL" />
+          <map name="tag772" opctag="Logical._BOOL" />
+          <map name="tag773" opctag="Numeric._I2" />
+          <map name="tag774" opctag="Logical._BOOL" />
+          <map name="tag775" opctag="Logical._BOOL" />
+          <map name="tag776" opctag="Logical._BOOL" />
+          <map name="tag777" opctag="Numeric._I2" />
+          <map name="tag778" opctag="Logical._BOOL" />
+          <map name="tag779" opctag="Logical._BOOL" />
+          <map name="tag780" opctag="Logical._BOOL" />
+          <map name="tag781" opctag="Logical._BOOL" />
+          <map name="tag782" opctag="Logical._BOOL" />
+          <map name="tag783" opctag="Numeric._I2" />
+          <map name="tag784" opctag="Logical._BOOL" />
+          <map name="tag785" opctag="Logical._BOOL" />
+          <map name="tag786" opctag="Logical._BOOL" />
+          <map name="tag787" opctag="Numeric._I2" />
+          <map name="tag788" opctag="Logical._BOOL" />
+          <map name="tag789" opctag="Logical._BOOL" />
+          <map name="tag790" opctag="Logical._BOOL" />
+          <map name="tag791" opctag="Logical._BOOL" />
+          <map name="tag792" opctag="Logical._BOOL" />
+          <map name="tag793" opctag="Numeric._I2" />
+          <map name="tag794" opctag="Logical._BOOL" />
+          <map name="tag795" opctag="Logical._BOOL" />
+          <map name="tag796" opctag="Logical._BOOL" />
+          <map name="tag797" opctag="Numeric._I2" />
+          <map name="tag798" opctag="Logical._BOOL" />
+          <map name="tag799" opctag="Logical._BOOL" />
+          <map name="tag800" opctag="Logical._BOOL" />
+        </init>
+      </service>
+      <service name="OpcClient8" type="Matrix.Services.ServiceOPCSimaticNET" enabled="false" assembly="Matrix.Services.OPCSimaticNET.dll">
+        <init interval="1000" callback="false" progid="ICONICS.SimulatorOPCDA" host="localhost" group="test8" checkinterval="5000" keepalive="true">
+          <map name="tag801" opctag="Numeric._I2" />
+          <map name="tag802" opctag="Logical._BOOL" />
+          <map name="tag803" opctag="Logical._BOOL" />
+          <map name="tag804" opctag="Logical._BOOL" />
+          <map name="tag805" opctag="Numeric._I2" />
+          <map name="tag806" opctag="Logical._BOOL" />
+          <map name="tag807" opctag="Logical._BOOL" />
+          <map name="tag808" opctag="Logical._BOOL" />
+          <map name="tag809" opctag="Numeric._I2" />
+          <map name="tag810" opctag="Logical._BOOL" />
+          <map name="tag811" opctag="Logical._BOOL" />
+          <map name="tag812" opctag="Logical._BOOL" />
+          <map name="tag813" opctag="Numeric._I2" />
+          <map name="tag814" opctag="Logical._BOOL" />
+          <map name="tag815" opctag="Logical._BOOL" />
+          <map name="tag816" opctag="Logical._BOOL" />
+          <map name="tag817" opctag="Numeric._I2" />
+          <map name="tag818" opctag="Logical._BOOL" />
+          <map name="tag819" opctag="Logical._BOOL" />
+          <map name="tag820" opctag="Logical._BOOL" />
+          <map name="tag821" opctag="Numeric._I2" />
+          <map name="tag822" opctag="Logical._BOOL" />
+          <map name="tag823" opctag="Logical._BOOL" />
+          <map name="tag824" opctag="Logical._BOOL" />
+          <map name="tag825" opctag="Numeric._I2" />
+          <map name="tag826" opctag="Logical._BOOL" />
+          <map name="tag827" opctag="Logical._BOOL" />
+          <map name="tag828" opctag="Logical._BOOL" />
+          <map name="tag829" opctag="Numeric._I2" />
+          <map name="tag830" opctag="Logical._BOOL" />
+          <map name="tag831" opctag="Logical._BOOL" />
+          <map name="tag832" opctag="Logical._BOOL" />
+          <map name="tag833" opctag="Numeric._I2" />
+          <map name="tag834" opctag="Logical._BOOL" />
+          <map name="tag835" opctag="Logical._BOOL" />
+          <map name="tag836" opctag="Logical._BOOL" />
+          <map name="tag837" opctag="Numeric._I2" />
+          <map name="tag838" opctag="Logical._BOOL" />
+          <map name="tag839" opctag="Logical._BOOL" />
+          <map name="tag840" opctag="Logical._BOOL" />
+          <map name="tag841" opctag="Numeric._I2" />
+          <map name="tag842" opctag="Logical._BOOL" />
+          <map name="tag843" opctag="Logical._BOOL" />
+          <map name="tag844" opctag="Logical._BOOL" />
+          <map name="tag845" opctag="Numeric._I2" />
+          <map name="tag846" opctag="Logical._BOOL" />
+          <map name="tag847" opctag="Logical._BOOL" />
+          <map name="tag848" opctag="Logical._BOOL" />
+          <map name="tag849" opctag="Numeric._I2" />
+          <map name="tag850" opctag="Logical._BOOL" />
+          <map name="tag851" opctag="Logical._BOOL" />
+          <map name="tag852" opctag="Logical._BOOL" />
+          <map name="tag853" opctag="Numeric._I2" />
+          <map name="tag854" opctag="Logical._BOOL" />
+          <map name="tag855" opctag="Logical._BOOL" />
+          <map name="tag856" opctag="Logical._BOOL" />
+          <map name="tag857" opctag="Numeric._I2" />
+          <map name="tag858" opctag="Logical._BOOL" />
+          <map name="tag859" opctag="Logical._BOOL" />
+          <map name="tag860" opctag="Logical._BOOL" />
+          <map name="tag861" opctag="Logical._BOOL" />
+          <map name="tag862" opctag="Logical._BOOL" />
+          <map name="tag863" opctag="Numeric._I2" />
+          <map name="tag864" opctag="Logical._BOOL" />
+          <map name="tag865" opctag="Logical._BOOL" />
+          <map name="tag866" opctag="Logical._BOOL" />
+          <map name="tag867" opctag="Numeric._I2" />
+          <map name="tag868" opctag="Logical._BOOL" />
+          <map name="tag869" opctag="Logical._BOOL" />
+          <map name="tag870" opctag="Logical._BOOL" />
+          <map name="tag871" opctag="Logical._BOOL" />
+          <map name="tag872" opctag="Logical._BOOL" />
+          <map name="tag873" opctag="Numeric._I2" />
+          <map name="tag874" opctag="Logical._BOOL" />
+          <map name="tag875" opctag="Logical._BOOL" />
+          <map name="tag876" opctag="Logical._BOOL" />
+          <map name="tag877" opctag="Numeric._I2" />
+          <map name="tag878" opctag="Logical._BOOL" />
+          <map name="tag879" opctag="Logical._BOOL" />
+          <map name="tag880" opctag="Logical._BOOL" />
+          <map name="tag881" opctag="Logical._BOOL" />
+          <map name="tag882" opctag="Logical._BOOL" />
+          <map name="tag883" opctag="Numeric._I2" />
+          <map name="tag884" opctag="Logical._BOOL" />
+          <map name="tag885" opctag="Logical._BOOL" />
+          <map name="tag886" opctag="Logical._BOOL" />
+          <map name="tag887" opctag="Numeric._I2" />
+          <map name="tag888" opctag="Logical._BOOL" />
+          <map name="tag889" opctag="Logical._BOOL" />
+          <map name="tag890" opctag="Logical._BOOL" />
+          <map name="tag891" opctag="Logical._BOOL" />
+          <map name="tag892" opctag="Logical._BOOL" />
+          <map name="tag893" opctag="Numeric._I2" />
+          <map name="tag894" opctag="Logical._BOOL" />
+          <map name="tag895" opctag="Logical._BOOL" />
+          <map name="tag896" opctag="Logical._BOOL" />
+          <map name="tag897" opctag="Numeric._I2" />
+          <map name="tag898" opctag="Logical._BOOL" />
+          <map name="tag899" opctag="Logical._BOOL" />
+          <map name="tag900" opctag="Logical._BOOL" />
+        </init>
+      </service>
+      <service name="OpcClient9" type="Matrix.Services.ServiceOPCSimaticNET" enabled="false" assembly="Matrix.Services.OPCSimaticNET.dll">
+        <init interval="1000" callback="false" progid="ICONICS.SimulatorOPCDA" host="localhost" group="test9" checkinterval="5000" keepalive="true">
+          <map name="tag901" opctag="Numeric._I2" />
+          <map name="tag902" opctag="Logical._BOOL" />
+          <map name="tag903" opctag="Logical._BOOL" />
+          <map name="tag904" opctag="Logical._BOOL" />
+          <map name="tag905" opctag="Numeric._I2" />
+          <map name="tag906" opctag="Logical._BOOL" />
+          <map name="tag907" opctag="Logical._BOOL" />
+          <map name="tag908" opctag="Logical._BOOL" />
+          <map name="tag909" opctag="Numeric._I2" />
+          <map name="tag910" opctag="Logical._BOOL" />
+          <map name="tag911" opctag="Logical._BOOL" />
+          <map name="tag912" opctag="Logical._BOOL" />
+          <map name="tag913" opctag="Numeric._I2" />
+          <map name="tag914" opctag="Logical._BOOL" />
+          <map name="tag915" opctag="Logical._BOOL" />
+          <map name="tag916" opctag="Logical._BOOL" />
+          <map name="tag917" opctag="Numeric._I2" />
+          <map name="tag918" opctag="Logical._BOOL" />
+          <map name="tag919" opctag="Logical._BOOL" />
+          <map name="tag920" opctag="Logical._BOOL" />
+          <map name="tag921" opctag="Numeric._I2" />
+          <map name="tag922" opctag="Logical._BOOL" />
+          <map name="tag923" opctag="Logical._BOOL" />
+          <map name="tag924" opctag="Logical._BOOL" />
+          <map name="tag925" opctag="Numeric._I2" />
+          <map name="tag926" opctag="Logical._BOOL" />
+          <map name="tag927" opctag="Logical._BOOL" />
+          <map name="tag928" opctag="Logical._BOOL" />
+          <map name="tag929" opctag="Numeric._I2" />
+          <map name="tag930" opctag="Logical._BOOL" />
+          <map name="tag931" opctag="Logical._BOOL" />
+          <map name="tag932" opctag="Logical._BOOL" />
+          <map name="tag933" opctag="Numeric._I2" />
+          <map name="tag934" opctag="Logical._BOOL" />
+          <map name="tag935" opctag="Logical._BOOL" />
+          <map name="tag936" opctag="Logical._BOOL" />
+          <map name="tag937" opctag="Numeric._I2" />
+          <map name="tag938" opctag="Logical._BOOL" />
+          <map name="tag939" opctag="Logical._BOOL" />
+          <map name="tag940" opctag="Logical._BOOL" />
+          <map name="tag941" opctag="Numeric._I2" />
+          <map name="tag942" opctag="Logical._BOOL" />
+          <map name="tag943" opctag="Logical._BOOL" />
+          <map name="tag944" opctag="Logical._BOOL" />
+          <map name="tag945" opctag="Numeric._I2" />
+          <map name="tag946" opctag="Logical._BOOL" />
+          <map name="tag947" opctag="Logical._BOOL" />
+          <map name="tag948" opctag="Logical._BOOL" />
+          <map name="tag949" opctag="Numeric._I2" />
+          <map name="tag950" opctag="Logical._BOOL" />
+          <map name="tag951" opctag="Logical._BOOL" />
+          <map name="tag952" opctag="Logical._BOOL" />
+          <map name="tag953" opctag="Numeric._I2" />
+          <map name="tag954" opctag="Logical._BOOL" />
+          <map name="tag955" opctag="Logical._BOOL" />
+          <map name="tag956" opctag="Logical._BOOL" />
+          <map name="tag957" opctag="Numeric._I2" />
+          <map name="tag958" opctag="Logical._BOOL" />
+          <map name="tag959" opctag="Logical._BOOL" />
+          <map name="tag960" opctag="Logical._BOOL" />
+          <map name="tag961" opctag="Logical._BOOL" />
+          <map name="tag962" opctag="Logical._BOOL" />
+          <map name="tag963" opctag="Numeric._I2" />
+          <map name="tag964" opctag="Logical._BOOL" />
+          <map name="tag965" opctag="Logical._BOOL" />
+          <map name="tag966" opctag="Logical._BOOL" />
+          <map name="tag967" opctag="Numeric._I2" />
+          <map name="tag968" opctag="Logical._BOOL" />
+          <map name="tag969" opctag="Logical._BOOL" />
+          <map name="tag970" opctag="Logical._BOOL" />
+          <map name="tag971" opctag="Logical._BOOL" />
+          <map name="tag972" opctag="Logical._BOOL" />
+          <map name="tag973" opctag="Numeric._I2" />
+          <map name="tag974" opctag="Logical._BOOL" />
+          <map name="tag975" opctag="Logical._BOOL" />
+          <map name="tag976" opctag="Logical._BOOL" />
+          <map name="tag977" opctag="Numeric._I2" />
+          <map name="tag978" opctag="Logical._BOOL" />
+          <map name="tag979" opctag="Logical._BOOL" />
+          <map name="tag980" opctag="Logical._BOOL" />
+          <map name="tag981" opctag="Logical._BOOL" />
+          <map name="tag982" opctag="Logical._BOOL" />
+          <map name="tag983" opctag="Numeric._I2" />
+          <map name="tag984" opctag="Logical._BOOL" />
+          <map name="tag985" opctag="Logical._BOOL" />
+          <map name="tag986" opctag="Logical._BOOL" />
+          <map name="tag987" opctag="Numeric._I2" />
+          <map name="tag988" opctag="Logical._BOOL" />
+          <map name="tag989" opctag="Logical._BOOL" />
+          <map name="tag990" opctag="Logical._BOOL" />
+          <map name="tag991" opctag="Logical._BOOL" />
+          <map name="tag992" opctag="Logical._BOOL" />
+          <map name="tag993" opctag="Numeric._I2" />
+          <map name="tag994" opctag="Logical._BOOL" />
+          <map name="tag995" opctag="Logical._BOOL" />
+          <map name="tag996" opctag="Logical._BOOL" />
+          <map name="tag997" opctag="Numeric._I2" />
+          <map name="tag998" opctag="Logical._BOOL" />
+          <map name="tag999" opctag="Logical._BOOL" />
+          <map name="tag1000" opctag="Logical._BOOL" />
+        </init>
+      </service>
+      -->
+      <service name="noname" description="" type="snapshot" enabled="false">
+        <init beforeretry="60000" description="" interval="60000" checkinterval="180000" keepalive="false" maxcycle="0" retry="3" retrypause="180000" startif="" status="">
+          <snapshot><![CDATA[
+    <msg>
+        <description>
+        Формируйте шаблон, в квадратных [] скобках укажите имя тега как указано ниже.
+        В разделе <map> укажите имя тега для сохранения результата. 
+        </description>
+        <type>1</type>
+        <name>melt_mark_xa</name>
+        <id>[id]</id>
+    </msg>
+]]></snapshot>
+          <map name="WINCCDB1.CURDB" />
+        </init>
+      </service>
+      <service name="noname1" description="фыффывфывфывфыв" type="alert" enabled="false">
+        <init beforeretry="60000" description="" interval="60000" checkinterval="180000" keepalive="false" maxcycle="0" retry="3" retrypause="180000" startif="" status="" />
+      </service>
+      <service name="noname2" description="" type="delay" enabled="false">
+        <init beforeretry="60000" description="" interval="60000" checkinterval="180000" keepalive="false" maxcycle="0" retry="3" retrypause="180000" startif="" status="" delay="60000" />
+      </service>
+      <service name="noname3" description="" type="dll" enabled="false">
+        <init beforeretry="60000" description="" interval="60000" checkinterval="180000" keepalive="false" maxcycle="0" retry="3" retrypause="180000" startif="" status="" assemble="имя сборки *.dll" method="метод для запуска" />
+      </service>
+    </services>
+  </servicemanager>
+  <tagmanager>
+    <tags>
+      <tag name="param4" type="string" description="param4 desc" logmode="1" delta="100" step="300" />
+      <tag name="param1" type="int" description="param1 desc ывавыаывава ываыаываываываыва" logmode="1" delta="100" step="300">
+      </tag>
+      <tag name="param2" type="float" description="param2 desc" logmode="1" delta="200" step="300">12.34</tag>
+      <tag name="param3" type="float" description="param3 desc" logmode="1" delta="100" step="300" />
+    </tags>
+  </tagmanager>
+</matrix>

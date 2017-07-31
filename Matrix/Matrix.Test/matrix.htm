@@ -1,0 +1,138 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+	<head>
+		<title>Matrix</title>
+        <script type="text/jscript">
+            function displayInfo(title,url, p) {
+                var obj = document.getElementById(p);
+                var xmlDom = new ActiveXObject("Microsoft.XMLDOM");
+                xmlDom.load(url);
+                //alert(url);
+                var list = [];
+                var root = xmlDom.documentElement;
+                if (root != null) {
+                    var nodes = xmlDom.selectNodes("//services/service");
+                    context = "<h3>" + title + ",&nbsp;&nbsp;&nbsp;&nbsp;" + root.getAttribute("dtchange") + "</h3>"
+                            + "<table border='1'>"
+                            + "<th></th><th>Service</th><th>Status</th><th>Last Run</th><th>Error Message</th>";
+                    if (nodes.length == 0)
+                        context += "<tr><td colspan='5' bgcolor='pink'>No services</td></tr>";
+
+                    for (var i = 0; i < nodes.length; i++) {
+                        list.push(nodes.item(i));
+                    }
+
+                    //Сортируем массив
+                    list.sort(function (a, b) {
+                        return a.getAttribute("name").toLowerCase() == b.getAttribute("name").toLowerCase() ? 0 : (a.getAttribute("name").toLowerCase() > b.getAttribute("name").toLowerCase() ? 1 : -1);
+                    });
+
+                    for (var i = 0; i < list.length; i++) {
+                        var node = list[i];
+                        name = node.getAttribute("name");
+                        status = node.getAttribute("status");
+                        lastrun = node.getAttribute("lastrun");
+                        description = node.getAttribute("description");
+                        errorMessage = node.text;
+                        if ("ERROR" == status)
+                            bgcolor = "pink";
+                        else if ("WAIT" == status)
+                            bgcolor = "yellow";
+                        else
+                            bgcolor = "";
+                        context += "<tr bgcolor='" + bgcolor + "'><td>" + (i + 1) + "</td><td><b>" + name + "</b><br/>" + description + "</td><td>" + status + "</td><td>" + lastrun + "</td><td>" + errorMessage + "</td></tr>"
+                    }
+                    context += "</table>";
+                    obj.innerHTML = context;
+
+                    var tags = xmlDom.selectSingleNode("//tags");
+                    context = "<h4>Tags <a href='javascript: showTags(\"" + p + "_tags\")'>Показать/Скрыть</a></h4>"
+                            + "<div id='" + p + "_tags' style='display:none'><table border='1' width='1000px'>"
+                            + "<th></th><th>Tag</th><th>Status</th><th>Timestamp</th><th>Value</th><th>Old Value</th><th>Default Value</th><th>Error Message</th>";
+
+                    if (tags.childNodes.length == 0)
+                        context += "<tr><td colspan='8' bgcolor='pink'>No tags</td></tr>";
+
+                    list.length = 0;
+                    for (var i = 0; i < tags.childNodes.length; i++) {
+                        list.push(tags.childNodes.item(i));
+                    }
+
+                    //Сортируем массив
+                    list.sort(function (a, b) {
+                        return a.nodeName.toLowerCase() == b.nodeName.toLowerCase() ? 0 : (a.nodeName.toLowerCase() > b.nodeName.toLowerCase() ? 1 : -1);
+                    });
+
+                    for (var i = 0; i < list.length; i++) {
+                        var node = list[i];
+                        name = node.nodeName;
+                        status = node.getAttribute("quality");
+                        timestamp = node.getAttribute("timestamp");
+                        description = node.getAttribute("description");
+                        defVal = "";
+                        val = "";
+                        oldVal = "";
+                        errorMessage = "";
+                        for (var j = 0; j < node.childNodes.length; j++) {
+                            switch (node.childNodes(j).nodeName) {
+                                case "default": defVal = node.childNodes(j).text;
+                                    break;
+                                case "value": val = node.childNodes(j).text;
+                                    break;
+                                case "oldvalue": oldVal = node.childNodes(j).text;
+                                    break;
+                                case "errormessage": errorMessage = node.childNodes(j).text;
+                                    break;
+                            }
+                        }
+                        if ("BAD" == status)
+                            bgcolor = "pink";
+                        else
+                            bgcolor = "";
+                        context += "<tr bgcolor='" + bgcolor + "'><td>" + (i + 1) + "</td><td><b>" + name + "</b><br/>" + description + "</td><td>" + status + "</td><td>" + timestamp + "</td><td>" + val + "</td><td>" + oldVal + "</td><td>" + defVal + "</td><td>" + errorMessage + "</td></tr>"
+                    }
+                    context += "</table></div>";
+                    obj.innerHTML += context;
+                }
+
+            }
+
+            function showTags(p) {
+//                alert(p);
+                var obj = document.getElementById(p);
+                if ("" == obj.style.display)
+                    obj.style.display="none";
+                else
+                    obj.style.display="";
+            }
+        </script>
+	</head>
+	<body>
+    <center>
+	    <div id="test"></div>
+        <br/>
+	    <div id="clrbcapp"></div>
+        <br/>
+        <br/>
+	    <div id="lnkarch"></div>
+        <br/>
+        <br/>
+	    <div id="zsmksim001"></div>
+        <br/>
+        <br/>
+	    <div id="icrvput"></div>
+        <br/>
+        <br/>
+	    <div id="ikc1put"></div>
+        <br/>
+    </center>
+    <script type="text/jscript">
+        //displayInfo("test", "bin/Debug/logs/tags.xml", "test");
+        displayInfo("ИТС РБЦ 100", "\\\\clrbcapp/p$/Matrix/logs/tags.xml", "clrbcapp");
+        displayInfo("ЛНК", "\\\\lnkarch/c$/Matrix/logs/tags.xml", "lnkarch");
+        displayInfo("ZSMK-SIM-001", "\\\\zsmk-sim-001/c$/Matrix/logs/tags.xml", "zsmksim001");
+        displayInfo("I-CRV-PUT", "\\\\i-crv-put/c$/Matrix/logs/tags.xml", "icrvput");
+        displayInfo("I-KC1-PUT", "\\\\i-kc1-put/c$/Matrix/logs/tags.xml", "ikc1put");
+    </script>
+	</body>
+</html>

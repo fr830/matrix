@@ -1,0 +1,167 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="FullSignature">
+  <Font Name="Tahoma" Size="8.25" />
+  <Class Name="mtrx_server.Server" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="3.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>Server.cs</FileName>
+      <HashCode>KQAgACAAACAAAAAABAABIAAAAAIAAAAAIAIAAQACAAA=</HashCode>
+    </TypeIdentifier>
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="mtrx_server.LogManager" Collapsed="true">
+    <Position X="2.5" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>LogManager.cs</FileName>
+      <HashCode>AAAAAAAAACAAAAAAQAAAMAAAAAAAQAAAIIACQIAEABA=</HashCode>
+    </TypeIdentifier>
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+  </Class>
+  <Class Name="mtrx_server.ConfigManager" Collapsed="true">
+    <Position X="3.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>ConfigManager.cs</FileName>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAGAAAAAAAQgQACAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+  </Class>
+  <Class Name="mtrx_server.TagCache" Collapsed="true">
+    <Position X="0.5" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>TagCache.cs</FileName>
+      <HashCode>AAAjAAAAACAAAIAAAAAAAAEAAACAAEAAIQACAAAAAAI=</HashCode>
+    </TypeIdentifier>
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+  </Class>
+  <Class Name="mtrx_server.TagStoreManager" Collapsed="true">
+    <Position X="6.5" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>TagStoreManager.cs</FileName>
+      <HashCode>AAAAAAAAAAAAAQAAQAAAAAAAAAgAAAAAAAACAAAAAEA=</HashCode>
+    </TypeIdentifier>
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+  </Class>
+  <Class Name="mtrx_server.LogFile" Collapsed="true">
+    <Position X="2.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>LogFile.cs</FileName>
+      <HashCode>AAKACIRAAAQgYBQEAAgAIAAgAACAABBAAAAAIAGIAAA=</HashCode>
+    </TypeIdentifier>
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+  </Class>
+  <Class Name="mtrx_server.Adapter" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="4.5" Y="4.25" Width="1.5" />
+    <TypeIdentifier />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="mtrx_server.AdapterManager" Collapsed="true">
+    <Position X="4.5" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>AdapterManager.cs</FileName>
+      <HashCode>AAACEAAAACAAAAAAYAAAAAAAAAAAAAAAIAACAAEAABI=</HashCode>
+    </TypeIdentifier>
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+  </Class>
+  <Class Name="mtrx_server.TagStoreFile" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="6.5" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>TagStoreFile.cs</FileName>
+      <HashCode>AAACIAAAAAAAIAQAAABAAAQAAAEIAAAAAAACAAGAABA=</HashCode>
+    </TypeIdentifier>
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Properties" Collapsed="true" />
+    </Compartments>
+    <Lollipop Position="0.221" Collapsed="true" />
+  </Class>
+  <Class Name="mtrx_server.TagStoreOracle" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="6.5" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>TagStoreOracle.cs</FileName>
+      <HashCode>AAACIAAAAAAAIAQAAABAABQAEAAAAAAIAIACEAGAABA=</HashCode>
+    </TypeIdentifier>
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Properties" Collapsed="true" />
+    </Compartments>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="mtrx_server.TagStoreMSSQL" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="6.5" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>TagStoreMSSQL.cs</FileName>
+      <HashCode>AAACIAAAAAAAIAQAAABAABQAEAAAAAAIAIACEAGAABA=</HashCode>
+    </TypeIdentifier>
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Properties" Collapsed="true" />
+    </Compartments>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="mtrx_server.AdapterOPC" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="4.5" Y="5" Width="1.75" />
+    <TypeIdentifier>
+      <FileName>AdapterOPC.cs</FileName>
+      <HashCode>AYACICAAACAAACAAYABAAAQAAAAAAAAAIRACBAGAUAI=</HashCode>
+    </TypeIdentifier>
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Properties" Collapsed="true" />
+    </Compartments>
+  </Class>
+  <Class Name="mtrx_server.AdapterOracle" Collapsed="true">
+    <Position X="4.5" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>AdapterOracle.cs</FileName>
+      <HashCode>AAIAAACAAAAAAAQgAAAAABBAAAAAAAAIAAACAACACAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="mtrx_server.AdapterKTCEnergi6">
+    <Position X="4.5" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>AdapterKTCEnergi6.cs</FileName>
+      <HashCode>AAAAAAAAAAAAAAgAAAIAgAAAAAACAAAAIAACBAGAEAI=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="mtrx_server.Tag" Collapsed="true">
+    <Position X="0.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier />
+  </Struct>
+  <Interface Name="mtrx_server.IAdapter" Collapsed="true">
+    <Position X="4.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+    </Compartments>
+  </Interface>
+  <Interface Name="mtrx_server.ITagStore" Collapsed="true">
+    <Position X="6.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+    </Compartments>
+  </Interface>
+  <Interface Name="mtrx_server.IServer">
+    <Position X="0.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier />
+  </Interface>
+</ClassDiagram>

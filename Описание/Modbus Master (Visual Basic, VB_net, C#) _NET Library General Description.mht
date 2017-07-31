@@ -1,0 +1,1213 @@
+From: <Сохранено Windows Internet Explorer 8>
+Subject: Modbus Master (Visual Basic, VB.net, C#) .NET Library: General Description
+Date: Thu, 3 Nov 2011 11:42:36 +0700
+MIME-Version: 1.0
+Content-Type: multipart/related;
+	type="text/html";
+	boundary="----=_NextPart_000_0038_01CC9A1D.AEB37F70"
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.6109
+
+This is a multi-part message in MIME format.
+
+------=_NextPart_000_0038_01CC9A1D.AEB37F70
+Content-Type: text/html;
+	charset="Windows-1252"
+Content-Transfer-Encoding: quoted-printable
+Content-Location: http://www.modbusdriver.com/doc/mbusmaster.net/default.html
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD><TITLE>Modbus Master (Visual Basic, VB.net, C#) .NET =
+Library: General Description</TITLE>
+<META content=3D"text/html; charset=3DWindows-1252" =
+http-equiv=3DContent-Type>
+<META name=3Dvs_targetSchema=20
+content=3Dhttp://schemas.microsoft.com/intellisense/ie5><LINK =
+rel=3Dstylesheet=20
+type=3Dtext/css =
+href=3D"http://www.modbusdriver.com/doc/mbusmaster.net/MSDN.css">
+<META name=3DGENERATOR content=3D"MSHTML 8.00.6001.19154"></HEAD>
+<BODY id=3DbodyID class=3DdtBODY>
+<DIV id=3Dnsbanner>
+<DIV id=3Dbannerrow1>
+<TABLE id=3DTable1 class=3Dbannerparthead cellSpacing=3D0>
+  <TBODY>
+  <TR id=3Dhdr>
+    <TD class=3Drunninghead>FieldTalkk=99 Modbus Master .NET =
+Library</TD>
+    <TD class=3Dproduct></TD></TR></TBODY></TABLE></DIV>
+<DIV id=3DTitleRow>
+<H1 class=3DdtH1>General Description</H1></DIV></DIV>
+<DIV id=3Dnstext>
+<P>
+<H2><A class=3Danchor name=3Dintroduction>Introduction</A></H2>The=20
+<EM>FieldTalk<SMALL><SUP>=99</SUP></SMALL></EM> Modbus Master .NET =
+Library=20
+provides connectivity to Modbus slave compatible devices for VB.net and =
+C#=20
+applications.
+<P><!--=0A=
+It is implemented as a Visual Basic .NET assembly. The .NET assembly =
+wraps around a libmbusmaster DLL which performs the core protocol =
+functions. The libmbusmaster DLL is based on the FieldTalk Modbus Master =
+C++ Library, a proven and industrial-strength Modbus driver =
+implementation.<p>=0A=
+-->Typical=20
+applications are supervisory control systems, data concentrators and =
+gateways,=20
+user interfaces and factory information systems.
+<P>Features:
+<P>
+<UL>
+  <LI>Robust design suitable for real-time and industrial applications
+  <LI>Full implementation of Class 0 and Class 1 Modbus functions as =
+well as a=20
+  subset of the most commonly used Class 2 functions
+  <LI>Standard Modbus boolean and 16-bit integer data types (coils, =
+discretes=20
+  &amp; registers)
+  <LI>Support for 32-bit integer, modulo-10000 and float data types
+  <LI>Configurable word alignment for 32-bit types (big-endian, =
+little-endian)
+  <LI>Support of Broadcasting
+  <LI>Failure and transmission counters
+  <LI>Transmission and connection time-out supervision
+  <LI>Detailed transmission and protocol failure reporting using error =
+codes
+  <LI>Scalable: you can use serial-line Modbus protocols only or =
+MODBUS/TCP or=20
+  all of them</LI></UL>
+<H2><A class=3Danchor name=3Dstructure>Library Structure</A></H2>The =
+library is=20
+organised into one class for each Modbus master protocol flavour and a =
+common=20
+base class, which applies to all protocol flavours. Because the two =
+serial=20
+protocols ASCII and RTU share some common code, an intermediate base =
+class=20
+implements the functions specific to serial protocols.
+<P>
+<DIV align=3Dcenter><IMG alt=3Dmbusmaster_inherit.gif=20
+src=3D"http://www.modbusdriver.com/doc/mbusmaster.net/mbusmaster_inherit.=
+gif">=20
+</DIV>
+<P>
+<P>The base class <A class=3Del=20
+href=3D"http://www.modbusdriver.com/doc/mbusmaster.net/FieldTalk.MbusMast=
+erFunctions.html">MbusMasterFunctions</A>=20
+contains all protocol unspecific functions, in particular the data and =
+control=20
+functions defined by Modbus. All protocol flavours inherit from this =
+base class.
+<P>The class <A class=3Del=20
+href=3D"http://www.modbusdriver.com/doc/mbusmaster.net/FieldTalk.MbusAsci=
+iMasterProtocol.html">MbusAsciiMasterProtocol</A>=20
+implements the Modbus ASCII protocol, the class <A class=3Del=20
+href=3D"http://www.modbusdriver.com/doc/mbusmaster.net/FieldTalk.MbusRtuM=
+asterProtocol.html">MbusRtuMasterProtocol</A>=20
+implements the Modbus RTU protocol and the class <A class=3Del=20
+href=3D"http://www.modbusdriver.com/doc/mbusmaster.net/FieldTalk.MbusTcpM=
+asterProtocol.html">MbusTcpMasterProtocol</A>=20
+implements the MODBUS/TCP protocol.
+<P>In order to use one of the three master protocols, the desired =
+protocol=20
+flavour class has to be instantiated. <!-- Overview -->
+<H2><A class=3Danchor name=3Doverview>Overview</A></H2>
+<UL>
+  <LI><A class=3Del=20
+  =
+href=3D"http://www.modbusdriver.com/doc/mbusmaster.net/default.html#modbu=
+s">What=20
+  You should know about Modbus</A>=20
+  <LI><A class=3Del=20
+  =
+href=3D"http://www.modbusdriver.com/doc/mbusmaster.net/default.html#desig=
+n">Design=20
+  Background</A>=20
+  <LI><A class=3Del=20
+  =
+href=3D"http://www.modbusdriver.com/doc/mbusmaster.net/LICENSE.txt">Licen=
+se</A>=20
+  <LI><A class=3Del=20
+  =
+href=3D"http://www.modbusdriver.com/doc/mbusmaster.net/default.html#suppo=
+rt">Support</A>=20
+
+  <LI><A class=3Del=20
+  =
+href=3D"http://www.modbusdriver.com/doc/mbusmaster.net/default.html#notic=
+es">Notices</A>=20
+  </LI></UL><!-- What You should know about Modbus -->
+<H1><A class=3Danchor name=3Dmodbus>What You should know about =
+Modbus</A></H1>
+<UL>
+  <LI><A class=3Del=20
+  =
+href=3D"http://www.modbusdriver.com/doc/mbusmaster.net/default.html#mbusb=
+ackground">Some=20
+  Background</A>
+  <LI><A class=3Del=20
+  =
+href=3D"http://www.modbusdriver.com/doc/mbusmaster.net/default.html#mbust=
+echnical">Technical=20
+  Information</A>
+  <LI><A class=3Del=20
+  =
+href=3D"http://www.modbusdriver.com/doc/mbusmaster.net/default.html#mbusf=
+unctions">The=20
+  Protocol Functions</A>
+  <LI><A class=3Del=20
+  =
+href=3D"http://www.modbusdriver.com/doc/mbusmaster.net/default.html#mbusa=
+ddressscheme">How=20
+  Slave Devices are identified</A>
+  <LI><A class=3Del=20
+  =
+href=3D"http://www.modbusdriver.com/doc/mbusmaster.net/default.html#mbusr=
+egmodel">The=20
+  Register Model and Data Tables</A>
+  <LI><A class=3Del=20
+  =
+href=3D"http://www.modbusdriver.com/doc/mbusmaster.net/default.html#mbusd=
+atamodel">Data=20
+  Encoding</A>
+  <LI><A class=3Del=20
+  =
+href=3D"http://www.modbusdriver.com/doc/mbusmaster.net/default.html#mbusr=
+egnumbers">Register=20
+  and Discrete Numbering Scheme</A>
+  <LI><A class=3Del=20
+  =
+href=3D"http://www.modbusdriver.com/doc/mbusmaster.net/default.html#mbusa=
+sciiprotocol">The=20
+  ASCII Protocol</A>
+  <LI><A class=3Del=20
+  =
+href=3D"http://www.modbusdriver.com/doc/mbusmaster.net/default.html#mbusr=
+tuprotocol">The=20
+  RTU Protocol</A>
+  <LI><A class=3Del=20
+  =
+href=3D"http://www.modbusdriver.com/doc/mbusmaster.net/default.html#mbust=
+cpprotocol">The=20
+  MODBUS/TCP Protocol</A></LI></UL>
+<H2><A class=3Danchor name=3Dmbusbackground>Some Background</A></H2>The=20
+Modbus<SUP>=AE</SUP> protocol family was originally developed by =
+Schneider=20
+Automation Inc. as an industrial network for their Modicon<SUP>=AE</SUP> =
+
+programmable controllers.
+<P>Since then the Modbus protocol family has been established as =
+vendor-neutral=20
+and open communication protocols, suitable for supervision and control =
+of=20
+automation equipment.
+<H2><A class=3Danchor name=3Dmbustechnical>Technical =
+Information</A></H2>Modbus is a=20
+master/slave protocol with half-duplex transmission.
+<P>One master and up to 247 slave devices can exist per network.
+<P>The protocol defines framing and message transfer as well as data and =
+control=20
+functions.
+<P>The protocol does not define a physical network layer. Modbus works =
+on=20
+different physical network layers. The ASCII and RTU protocol operate on =
+RS 232,=20
+RS 422 and RS 485 physical networks. The Modbus/TCP protocol operates on =
+all=20
+physical network layers supporting TCP/IP. This compromises 10BASE-T and =
+
+100BASE-T LANs as well as serial PPP and SLIP network layers.
+<P>
+<DL compact>
+  <DT><B>Note:</B>
+  <DD>To utilise the multi-drop feature of Modbus, you need a =
+multi-point=20
+  network like RS 485. In order to access a RS 485 network, you will =
+need a=20
+  protocol converter which automatically switches between sending and=20
+  transmitting operation. However some industrial hardware platforms =
+have an=20
+  embedded RS485 line driver and support enabling and disabling of the =
+RS485=20
+  transmitter via the RTS signal. This FieldTalk edition supports this =
+RTS=20
+  driven RS485 mode.</DD></DL>
+<H3><A class=3Danchor name=3Dmbusfunctions>The Protocol =
+Functions</A></H3>Modbus=20
+defines a set of data and control functions to perform data transfer, =
+slave=20
+diagnostic and PLC program download.
+<P>FieldTalk implements the most commonly used functions for data =
+transfer as=20
+well as some diagnostic functions. The functions to perform PLC program =
+download=20
+and other device specific functions are outside the scope of FieldTalk.
+<P>All functions of conformance Class 0 and Class 1 have been =
+implemented. In=20
+addition the most frequently used functions of conformance Class 2 have =
+been=20
+implemented. This rich function set enables a user to solve nearly every =
+Modbus=20
+data transfer problem.
+<P>The following table lists the available Modbus functions:
+<P>
+<TABLE border=3D1 cellSpacing=3D3 cellPadding=3D3>
+  <TBODY>
+  <TR>
+    <TD><B>Function Code</B></TD>
+    <TD><B>Current Terminology</B> </TD>
+    <TD><B>Classic Terminology</B> </TD></TR>
+  <TR>
+    <TD><B>Conformance Class 0</B> </TD></TR>
+  <TR>
+    <TD>3 (03 hex)</TD>
+    <TD>Read Multiple Registers </TD>
+    <TD>Read Holding Registers </TD></TR>
+  <TR>
+    <TD>16 (10 hex)</TD>
+    <TD>Write Multiple Registers </TD>
+    <TD>Preset Multiple Registers </TD></TR>
+  <TR>
+    <TD><B>Conformance Class 1</B> </TD></TR>
+  <TR>
+    <TD>1 (01 hex)</TD>
+    <TD>Read Coils</TD>
+    <TD>Read Coil Status </TD></TR>
+  <TR>
+    <TD>2 (02 hex)</TD>
+    <TD>Read Inputs Discretes </TD>
+    <TD>Read Input Status </TD></TR>
+  <TR>
+    <TD>4 (04 hex)</TD>
+    <TD>Read Input Registers </TD>
+    <TD>Read Input Registers </TD></TR>
+  <TR>
+    <TD>5 (05 hex)</TD>
+    <TD>Write Coil</TD>
+    <TD>Force Single Coil </TD></TR>
+  <TR>
+    <TD>6 (06 hex)</TD>
+    <TD>Write Single Register </TD>
+    <TD>Preset Single Register </TD></TR>
+  <TR>
+    <TD>7 (07 hex)</TD>
+    <TD>Read Exception Status </TD>
+    <TD>Read Exception Status </TD></TR>
+  <TR>
+    <TD><B>Conformance Class 2</B> </TD></TR>
+  <TR>
+    <TD>15 (0F hex)</TD>
+    <TD>Force Multiple Coils </TD>
+    <TD>Force Multiple Coils </TD></TR>
+  <TR>
+    <TD>22 (16 hex)</TD>
+    <TD>Mask Write Register </TD>
+    <TD>Mask Write Register </TD></TR>
+  <TR>
+    <TD>23 (17 hex)</TD>
+    <TD>Read/Write Registers </TD>
+    <TD>Read/Write Registers </TD></TR></TBODY></TABLE>
+<H3><A class=3Danchor name=3Dmbusaddressscheme>How Slave Devices are=20
+identified</A></H3>A slave device is identified with its unique address=20
+identifier. Valid address identifiers supported are 1 to 247. Some =
+library=20
+functions also extend the slave ID to 255, please check the individual=20
+function's documentation.
+<P>Some Modbus functions support broadcasting. With functions supporting =
+
+broadcasting, a master can send broadcasts to all slave devices of a =
+network by=20
+using address identifier 0. Broadcasts are unconfirmed, there is no =
+guarantee of=20
+message delivery. Therefore broadcasts should only be used for =
+uncritical data=20
+like time synchronisation.
+<H3><A class=3Danchor name=3Dmbusregmodel>The Register Model and Data=20
+Tables</A></H3>The Modbus data functions are based on a register model. =
+A=20
+register is the smallest addressable entity with Modbus.
+<P>The register model is based on a series of tables which have =
+distinguishing=20
+characteristics. The four tables are:
+<P>
+<TABLE border=3D1 cellSpacing=3D3 cellPadding=3D3>
+  <TBODY>
+  <TR>
+    <TD><B>Table</B></TD>
+    <TD><B>Classic Terminology</B> </TD>
+    <TD><B>Modicon<SUP>=AE</SUP> Register Table</B> </TD>
+    <TD><B>Characteristics</B> </TD></TR>
+  <TR>
+    <TD>Discrete outputs</TD>
+    <TD>Coils</TD>
+    <TD>0:00000 </TD>
+    <TD>16-bit quantity, alterable by an application program, read-write =
+
+</TD></TR>
+  <TR>
+    <TD>Discrete inputs</TD>
+    <TD>Inputs</TD>
+    <TD>1:00000 </TD>
+    <TD>Single bit, provided by an I/O system, read-only </TD></TR>
+  <TR>
+    <TD>Input registers</TD>
+    <TD>Input registers</TD>
+    <TD>3:00000 </TD>
+    <TD>16-bit quantity, provided by an I/O system, read-only </TD></TR>
+  <TR>
+    <TD>Output registers</TD>
+    <TD>Holding registers</TD>
+    <TD>4:00000 </TD>
+    <TD>Single bit, alterable by an application program, read-write=20
+  </TD></TR></TBODY></TABLE>
+<P>The Modbus protocol defines these areas very loose. The distinction =
+between=20
+inputs and outputs and bit-addressable and register-addressable data =
+items does=20
+not imply any slave specific behaviour. It is very common that slave =
+devices=20
+implement all table as overlapping memory area.
+<P>For each of those tables, the protocol allows a maximum of 65536 data =
+items=20
+to be accessed. It is slave dependant, which data items are accessible =
+by a=20
+master. Typically a slave implements only a small memory area, for =
+example of=20
+1024 bytes, to be accessed.
+<H3><A class=3Danchor name=3Dmbusdatamodel>Data Encoding</A></H3>Classic =
+Modbus=20
+defines only two elementary data types. The discrete type and the =
+register type.=20
+A discrete type represents a bit value and is typically used to address =
+output=20
+coils and digital inputs of a PLC. A register type represents a 16-bit =
+integer=20
+value. Some manufacturers offer a special protocol flavour with the =
+option of a=20
+single register representing one 32-bit value.
+<P>All Modbus data function are based on the two elementary data types. =
+These=20
+elementary data types are transferred in big-endian byte order.
+<P>Based on the elementary 16-bit register, any bulk information of any =
+type can=20
+be exchanged as long as that information can be represented as a =
+contiguous=20
+block of 16-bit registers. The protocol itself does not specify how =
+32-bit data=20
+and bulk data like strings is structured. Data representation depends on =
+the=20
+slave's implementation and varies from device to device.
+<P>It is very common to transfer 32-bit float values and 32-bit integer =
+values=20
+as pairs of two consecutive 16-bit registers in little-endian word =
+order.=20
+However some manufacturers like Daniel and Enron implement an enhanced =
+flavour=20
+of Modbus which supports 32-bit wide register transfers.
+<P>The FieldTalk Modbus Master Library defines functions for the most =
+common=20
+tasks like:
+<UL>
+  <LI>Reading and Writing bit values
+  <LI>Reading and Writing 16-bit integers
+  <LI>Reading and Writing 32-bit integers
+  <LI>Reading and Writing 32-bit floats
+  <LI>Configuring the word order and representation for 32-bit =
+values</LI></UL>
+<P>The FieldTalk Modbus Slave Library defines services to
+<UL>
+  <LI>Read and Write bit values
+  <LI>Read and Write 16-bit integers</LI></UL>
+<H3><A class=3Danchor name=3Dmbusregnumbers>Register and Discrete =
+Numbering=20
+Scheme</A></H3>Modicon<SUP>=AE</SUP> PLC registers and discretes are =
+addressed by=20
+a memory type and a register number or a discrete number, e.g. 4:00001 =
+would be=20
+the first reference of the output registers.
+<P>The type offset which selects the Modicon register table must not be =
+passed=20
+to the FieldTalk functions. The register table is selected by choosing =
+the=20
+corresponding function call as the following table illustrates.
+<P>
+<TABLE border=3D1 cellSpacing=3D3 cellPadding=3D3>
+  <TBODY>
+  <TR>
+    <TD><B>Master Function Call</B></TD>
+    <TD><B>Modicon<SUP>=AE</SUP> Register Table</B> </TD></TR>
+  <TR>
+    <TD>readCoils(), writeCoil(), forceMultipleCoils()</TD>
+    <TD>0:00000 </TD></TR>
+  <TR>
+    <TD>readInputDiscretes</TD>
+    <TD>1:00000 </TD></TR>
+  <TR>
+    <TD>readInputRegisters()</TD>
+    <TD>3:00000 </TD></TR>
+  <TR>
+    <TD>writeMultipleRegisters(),=20
+      readMultipleRegisters(),<BR>writeSingleRegister(),=20
+      maskWriteRegister(),<BR>readWriteRegisters()</TD>
+    <TD>4:00000 </TD></TR></TBODY></TABLE>
+<P>Modbus registers are numbered starting from 1. This is different to =
+the=20
+conventional programming logic where the first reference is addressed by =
+0.
+<P>Modbus discretes are numbered starting from 1 which addresses the =
+most=20
+significant bit in a 16-bit word. This is very different to the =
+conventional=20
+programming logic where the first reference is addressed by 0 and the =
+least=20
+significant bit is bit 0.
+<P>The following table shows the correlation between Discrete Numbers =
+and Bit=20
+Numbers:
+<P>
+<TABLE border=3D1 cellSpacing=3D3 cellPadding=3D3>
+  <TBODY>
+  <TR>
+    <TD><B>Modbus <BR>Discrete<BR>Number</B></TD>
+    <TD><B>Bit Number</B> </TD></TR>
+  <TR>
+    <TD>1</TD>
+    <TD>15 (hex 0x8000) </TD></TR>
+  <TR>
+    <TD>2</TD>
+    <TD>14 (hex 0x4000) </TD></TR>
+  <TR>
+    <TD>3</TD>
+    <TD>13 (hex 0x2000) </TD></TR>
+  <TR>
+    <TD>4</TD>
+    <TD>12 (hex 0x1000) </TD></TR>
+  <TR>
+    <TD>5</TD>
+    <TD>11 (hex 0x0800) </TD></TR>
+  <TR>
+    <TD>6</TD>
+    <TD>10 (hex 0x0400) </TD></TR>
+  <TR>
+    <TD>7</TD>
+    <TD>9 (hex 0x0200) </TD></TR>
+  <TR>
+    <TD>8</TD>
+    <TD>8 (hex 0x0100) </TD></TR>
+  <TR>
+    <TD>9</TD>
+    <TD>7 (hex 0x0080) </TD></TR>
+  <TR>
+    <TD>10</TD>
+    <TD>6 (hex 0x0040) </TD></TR>
+  <TR>
+    <TD>11</TD>
+    <TD>5 (hex 0x0020) </TD></TR>
+  <TR>
+    <TD>12</TD>
+    <TD>4 (hex 0x0010) </TD></TR>
+  <TR>
+    <TD>13</TD>
+    <TD>3 (hex 0x0008) </TD></TR>
+  <TR>
+    <TD>14</TD>
+    <TD>2 (hex 0x0004) </TD></TR>
+  <TR>
+    <TD>15</TD>
+    <TD>1 (hex 0x0002) </TD></TR>
+  <TR>
+    <TD>16</TD>
+    <TD>0 (hex 0x0001) </TD></TR></TBODY></TABLE>
+<P>When exchanging register number and discrete number parameters with =
+FieldTalk=20
+functions and methdos you have to use the Modbus register and discrete =
+numbering=20
+scheme. (Internally the functions will deduct 1 from the start register =
+value=20
+before transmitting the value to the slave device.)
+<H3><A class=3Danchor name=3Dmbusasciiprotocol>The ASCII =
+Protocol</A></H3>The ASCII=20
+protocol uses an hexadecimal ASCII encoding of data and a 8 bit =
+checksum. The=20
+message frames are delimited with a ':' character at the beginning and a =
+
+carriage return/linefeed sequence at the end.
+<P>The ASCII messaging is less efficient and less secure than the RTU =
+messaging=20
+and therefore it should only be used to talk to devices which don't =
+support RTU.=20
+Another application of the ASCII protocol are communication networks =
+where the=20
+RTU messaging is not applicable because characters cannot be transmitted =
+as a=20
+continuos stream to the slave device.
+<P>The ASCII messaging is state-less. There is no need to open or close=20
+connections to a particular slave device or special error recovery =
+procedures.
+<P>A transmission failure is indicated by not receiving a reply from the =
+slave.=20
+In case of a transmission failure, a master simply repeats the message. =
+A slave=20
+which detects a transmission failure will discard the message without =
+sending a=20
+reply to the master.
+<H3><A class=3Danchor name=3Dmbusrtuprotocol>The RTU =
+Protocol</A></H3>The RTU=20
+protocol uses binary encoding of data and a 16 bit CRC check for =
+detection of=20
+transmission errors. The message frames are delimited by a silent =
+interval of at=20
+least 3.5 character transmission times before and after the transmission =
+of the=20
+message.
+<P>When using RTU protocol it is very important that messages are sent =
+as=20
+continuous character stream without gaps. If there is a gap of more than =
+3.5=20
+character times while receiving the message, a slave device will =
+interpret this=20
+as end of frame and discard the bytes received.
+<P>The RTU messaging is state-less. There is no need to open or close=20
+connections to a particular slave device or special error recovery =
+procedures.
+<P>A transmission failure is indicated by not receiving a reply from the =
+slave.=20
+In case of a transmission failure, a master simply repeats the message. =
+A slave=20
+which detects a transmission failure will discard the message without =
+sending a=20
+reply to the master.
+<H3><A class=3Danchor name=3Dmbustcpprotocol>The MODBUS/TCP=20
+Protocol</A></H3>MODBUS/TCP is a TCP/IP based variant of the Modbus RTU=20
+protocol. It covers the use of Modbus messaging in an 'Intranet' or =
+'Internet'=20
+environment.
+<P>The MODBUS/TCP protocol uses binary encoding of data and TCP/IP's =
+error=20
+detection mechanism for detection of transmission errors.
+<P>In contrast to the ASCII and RTU protocols MODBUS/TCP is a connection =
+
+oriented protocol. It allows concurrent connections to the same slave as =
+well as=20
+concurrent connections to multiple slave devices.
+<P>In case of a TCP/IP time-out or a protocol failure, a master shall =
+close and=20
+re-open the connection and then repeat the message. <!-- Design =
+Background -->
+<H1><A class=3Danchor name=3Ddesign>Design Background</A></H1>FieldTalk =
+is based on=20
+a programming language neutral but object oriented design model.
+<P>This design approach enables us to offer the protocol stack for C#, =
+VB.net,=20
+Java, Object Pascal and for C++ while maintaining similar functionality.
+<P>The C++ editions of the protocol stack have also been designed to =
+support=20
+multiple operating system and compiler platforms, including real-time =
+operating=20
+systems. In order to support this multi-platform approach, the C++ =
+editions are=20
+built around a lightweight OS abstraction layer called <EM>HMLIB</EM>.
+<P>The Java edition is using the Java 2 Platform Standard Edition API =
+and the=20
+Java Communications API. This enables compatibility with most VM=20
+implementations.
+<P>During the course of implementation, the usability in automation, =
+control and=20
+other industrial environments was always kept in mind. <!-- Support -->
+<H1><A class=3Danchor name=3Dsupport>Support</H1>We provide electronic =
+support and=20
+feedback for our FieldTalk products. Please use the Support web page at: =
+<A=20
+href=3D"http://www.modbusdriver.com/support/">http://www.modbusdriver.com=
+/support/</A>
+<P>Your feedback is always welcome. It helps improving this product. =
+<!-- Notices -->
+<H1><A class=3Danchor name=3Dnotices>Notices</A></H1><B>Disclaimer</B>: =
+FOCUS=20
+Software Engineering makes no warranty for the use of its products, =
+other than=20
+those expressly contained in the Company=92s standard warranty which is =
+detailed=20
+in FOCUS Software Engineering=92s Terms and Conditions located on the =
+Company=92s=20
+Website. The Company assumes no responsibility for any errors which may =
+appear=20
+in this document, reserves the right to change devices or specifications =
+
+detailed herein at any time without notice, and does not make any =
+commitment to=20
+update the information contained herein. No licenses to patents or other =
+
+intellectual property of FOCUS Software Engineering are granted by the =
+Company=20
+in connection with the sale of FOCUS Software Engineering's products, =
+expressly=20
+or by implication. FOCUS Software Engineering=92s products are not =
+authorized for=20
+use as critical components in life support devices or systems.
+<P>FieldTalk<SMALL><SUP>=99</SUP></SMALL> was developed by:<BR>FOCUS =
+Software=20
+Engineering Pty Ltd, Australia.<BR>Copyright =A9 2002-2005. All rights =
+reserved.
+<P>FieldTalk is a trademark of FOCUS Software Engineering Pty Ltd. =
+Modbus is a=20
+trademark or registered trademark of Schneider Automation Inc. Java and =
+all=20
+Java-based marks are trademarks or registered trademarks of Sun =
+Microsystems,=20
+Inc. in the U.S. and other countries. All other product and brand names=20
+mentioned in this document may be trademarks or registered trademarks of =
+their=20
+respective owners. </P></DIV>
+<DIV id=3Dnstext>
+<HR>
+
+<DIV id=3Dfooter>
+<P><A href=3D"http://www.focus-sw.com/">Copyright =AE 2005 FOCUS =
+Software=20
+Engineering Pty Ltd, Australia. All rights reserved.=20
+</A></P></DIV></DIV></BODY></HTML>
+
+------=_NextPart_000_0038_01CC9A1D.AEB37F70
+Content-Type: image/gif
+Content-Transfer-Encoding: base64
+Content-Location: http://www.modbusdriver.com/doc/mbusmaster.net/mbusmaster_inherit.gif
+
+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
+CAAgkCgACgikFFIgUUASIkFghABJiAQASAaKBEASIgEgIJBSzDnnnFOKOQFIpAQAQEkAIJCBIg0A
+BABAAGIELP8DAAGBlAIYIYCYQgqYEgAAJQFGMsLAA4gRZQAjBEgCGgQAEEgUICCQUkiBRAFJiASB
+EQIkIRIAIBkoEgBJiASAgEBKMeecc04xJ4BESgAAlAQAAhko0gBAAAAEIEbAMgAQEEgpgBECiClk
+gggCKVMC5shjQBLQIACAQKIAAAQEUiYjkhTHiDShSAkAgJIAIxkBzQHEiDKAEQIkKAwCAAgkChAQ
+SCmkQKKAJESCwAgBkhAJAJAMFAmAJEQCQEAgp5hzSjGnIAICaYiQooxRkhQQSAEMAShJUA6AKQFg
+CEAJgFQGHCUBAYAAQBABIACGCJASAMcAAwlACQABUBqjIAj/gEhgACHBQEVCkcBAZYyCgAAIljEK
+AqmMURIqcIyCgIBASjHnnHNOKeYEIEEEAMAQAYAoA46SABAAAAEMARAlAAQAYKACgIAACAmEFERI
+YAgUICUAjgGGAJQgAAKgNEZBUiQABxAAgIEKACIBOFAZoyAgACpjwIJAKmOUhMoYBSIgIJBSzDnn
+nFPMCSBBBADAEAGAKAOOkgAQAAABDAEQJQAEAGCgAoCAAAgJhDRDSjAMBCgBkBBKYxQEIBAJDACA
+AACABMsYJQFRxigIACiIAAAYIkBKAMBjgCEAJQAEQAmOURAAIoEBBAAQDFQAEAkMVMaABQEBUBmj
+IJAKHKMk/1RkQUBAIKeYc0oxpwAFHkAMEACIAcAwEAAhgQAGESmHgAAMMYBBREozJBwECAAEAAKU
+AyAxQIABwCACGAQJAAAIYAYAxAAIxAAAQCFlGQCIAYAZAIJhgABmADAMMHAAMIgZAAwDBARSijnn
+nHNKMScACVAOIAYIAMQAEAwDgAAACGAQgUACKKQsAwABgAAAQAGAAOUAYoAAAwIwiAAGESkFMHAA
+QAwAYgAAoJCyDADEAMAMAMEwQAAzABgGGDgAGMQMAIYBAgIpxZxzzjnFnAASoBxADBAAiAEgGAYA
+AQAQwCACgQRQSFkGAAIAAQCAAgABgZxAgCGkGGZISAwAYv9AIKWYwAw5CBADAjCMFKAcQAwQEAwA
+BhHAIAIAgEAAMwAgBgAxAAQACinLAEAMAMwAEAwDBDADgGGAgQOAQcwAYBggIJBTzDmlmFOAAwtI
+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
+AwYWCg4SFhoeIiYqLjI2Oj5CRkpOUipCRAA7
+
+------=_NextPart_000_0038_01CC9A1D.AEB37F70
+Content-Type: text/css;
+	charset="koi8-r"
+Content-Transfer-Encoding: quoted-printable
+Content-Location: http://www.modbusdriver.com/doc/mbusmaster.net/MSDN.css
+
+BODY {
+	PADDING-BOTTOM: 0px; MARGIN: 0px; PADDING-LEFT: 0px; WIDTH: 100%; =
+PADDING-RIGHT: 0px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; =
+BACKGROUND: #ffffff; COLOR: #000000; FONT-SIZE: 70%; PADDING-TOP: 0px
+}
+DIV#scrollyes {
+	PADDING-BOTTOM: 2px; PADDING-LEFT: 22px; WIDTH: 100%; PADDING-RIGHT: =
+15px; PADDING-TOP: 2px
+}
+DIV#nsbanner {
+	BORDER-BOTTOM: #999999 1px solid; POSITION: relative; PADDING-BOTTOM: =
+0px; BACKGROUND-COLOR: #99ccff; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; =
+PADDING-TOP: 0px; LEFT: 0px
+}
+DIV#nstext {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 22px; PADDING-RIGHT: 20px; TOP: 0px; =
+PADDING-TOP: 5px
+}
+DIV#scrbanner {
+	BORDER-BOTTOM: #999999 1px solid; PADDING-BOTTOM: 0px; MARGIN: 0px; =
+PADDING-LEFT: 0px; PADDING-RIGHT: 0px; PADDING-TOP: 0px
+}
+DIV#scrtext {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 22px; PADDING-RIGHT: 10px; =
+PADDING-TOP: 0px
+}
+DIV#bannerrow1 {
+=09
+}
+DIV#titlerow {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 22px; PADDING-RIGHT: 10px; =
+PADDING-TOP: 0px
+}
+H1 {
+	MARGIN-TOP: 1em; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; =
+MARGIN-BOTTOM: 0.4em; FONT-WEIGHT: bold
+}
+H2 {
+	MARGIN-TOP: 1em; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; =
+MARGIN-BOTTOM: 0.4em; FONT-WEIGHT: bold
+}
+H3 {
+	MARGIN-TOP: 1em; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; =
+MARGIN-BOTTOM: 0.4em; FONT-WEIGHT: bold
+}
+H4 {
+	MARGIN-TOP: 1em; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; =
+MARGIN-BOTTOM: 0.4em; FONT-WEIGHT: bold
+}
+H1 {
+	MARGIN-TOP: 0em; FONT-SIZE: 120%
+}
+DIV#scrollyes H1 {
+	FONT-SIZE: 150%
+}
+H2 {
+	FONT-SIZE: 130%
+}
+H3 {
+	FONT-SIZE: 115%
+}
+H4 {
+	FONT-SIZE: 100%
+}
+.dtH1 {
+	MARGIN-LEFT: -18px
+}
+.dtH2 {
+	MARGIN-LEFT: -18px
+}
+.dtH3 {
+	MARGIN-LEFT: -18px
+}
+.dtH4 {
+	MARGIN-LEFT: -18px
+}
+DIV#titlerow H1 {
+	MARGIN-BOTTOM: 0.2em
+}
+TABLE.bannerparthead {
+	BORDER-BOTTOM: 0px solid; POSITION: relative; BORDER-LEFT: 0px solid; =
+PADDING-BOTTOM: 0px; BACKGROUND-COLOR: #99ccff; MARGIN: 0px; =
+PADDING-LEFT: 0px; WIDTH: 100%; PADDING-RIGHT: 0px; BORDER-COLLAPSE: =
+collapse; HEIGHT: 21px; FONT-SIZE: 100%; BORDER-TOP: 0px solid; TOP: =
+0px; BORDER-RIGHT: 0px solid; PADDING-TOP: 0px; LEFT: 0px
+}
+TABLE.bannertitle {
+	BORDER-BOTTOM: 0px solid; POSITION: relative; BORDER-LEFT: 0px solid; =
+PADDING-BOTTOM: 0px; BACKGROUND-COLOR: #99ccff; MARGIN: 0px; =
+PADDING-LEFT: 0px; WIDTH: 100%; PADDING-RIGHT: 0px; BORDER-COLLAPSE: =
+collapse; HEIGHT: 21px; FONT-SIZE: 100%; BORDER-TOP: 0px solid; TOP: =
+0px; BORDER-RIGHT: 0px solid; PADDING-TOP: 0px; LEFT: 0px
+}
+TABLE.bannerparthead TD {
+	BORDER-BOTTOM: #999999 0px solid; BORDER-LEFT: #999999 0px solid; =
+PADDING-BOTTOM: 0px; FONT-STYLE: italic; MARGIN: 0px; PADDING-LEFT: 4px; =
+PADDING-RIGHT: 0px; BACKGROUND: none transparent scroll repeat 0% 0%; =
+VERTICAL-ALIGN: middle; BORDER-TOP: #999999 0px solid; FONT-WEIGHT: =
+normal; BORDER-RIGHT: #999999 0px solid; PADDING-TOP: 2px
+}
+TABLE.bannerparthead TD.product {
+	TEXT-ALIGN: right; PADDING-BOTTOM: 0px; PADDING-LEFT: 5px; =
+PADDING-RIGHT: 5px; PADDING-TOP: 2px
+}
+TABLE.bannertitle TD {
+	BORDER-BOTTOM: #999999 1px solid; BORDER-LEFT: #999999 0px solid; =
+PADDING-BOTTOM: 0px; MARGIN: 0px; PADDING-LEFT: 3px; PADDING-RIGHT: 0px; =
+BACKGROUND: none transparent scroll repeat 0% 0%; VERTICAL-ALIGN: =
+middle; BORDER-TOP: #999999 0px solid; FONT-WEIGHT: bold; BORDER-RIGHT: =
+#999999 0px solid; PADDING-TOP: 0px
+}
+TD.button1 {
+	WIDTH: 14px; CURSOR: hand
+}
+P {
+	MARGIN: 0.5em 0em
+}
+BLOCKQUOTE.dtBlock {
+	MARGIN: 0.5em 1.5em
+}
+DIV#dtHoverText {
+	COLOR: #000066
+}
+.normal {
+	MARGIN: 0.5em 0em
+}
+.fineprint {
+	FONT-SIZE: 90%
+}
+.indent {
+	MARGIN: 0.5em 1.5em
+}
+.topicstatus {
+	DISPLAY: block; COLOR: red
+}
+P.label {
+	MARGIN-TOP: 1em
+}
+P.labelproc {
+	MARGIN-TOP: 1em; COLOR: #000066
+}
+DIV.tablediv {
+	MARGIN-TOP: -0.4em; WIDTH: 100%
+}
+OL DIV.tablediv {
+	MARGIN-TOP: 0em
+}
+UL DIV.tablediv {
+	MARGIN-TOP: 0em
+}
+OL DIV.HxLinkTable {
+	MARGIN-TOP: 0em
+}
+UL DIV.HxLinkTable {
+	MARGIN-TOP: 0em
+}
+TABLE.dtTABLE {
+	BORDER-BOTTOM: #999999 0px solid; BORDER-LEFT: #999999 0px solid; =
+BACKGROUND-COLOR: #999999; MARGIN-TOP: 0.6em; WIDTH: 100%; =
+MARGIN-BOTTOM: 0.3em; FONT-SIZE: 100%; BORDER-TOP: #999999 1px solid; =
+BORDER-RIGHT: #999999 1px solid
+}
+TABLE.dtTABLE TH {
+	BORDER-BOTTOM: #999999 1px solid; TEXT-ALIGN: left; BORDER-LEFT: =
+#999999 1px solid; PADDING-BOTTOM: 4px; PADDING-LEFT: 6px; =
+PADDING-RIGHT: 6px; BORDER-TOP: #999999 0px solid; BORDER-RIGHT: #999999 =
+0px solid; PADDING-TOP: 4px
+}
+TABLE.dtTABLE TD {
+	BORDER-BOTTOM: #999999 1px solid; TEXT-ALIGN: left; BORDER-LEFT: =
+#999999 1px solid; PADDING-BOTTOM: 4px; PADDING-LEFT: 6px; =
+PADDING-RIGHT: 6px; BORDER-TOP: #999999 0px solid; BORDER-RIGHT: #999999 =
+0px solid; PADDING-TOP: 4px
+}
+TABLE.dtTABLE TH {
+	BACKGROUND: #cccccc; VERTICAL-ALIGN: bottom
+}
+TABLE.dtTABLE TD {
+	BACKGROUND: #ffffff; VERTICAL-ALIGN: top
+}
+MSHelp\:ktable {
+	disambiguator: span; separator: &nbsp|&#32; prefix: |&#32; postfix: =
+&nbsp; filterString:=20
+}
+DIV.HxLinkTable {
+	MARGIN-TOP: -0.4em; WIDTH: auto; VISIBILITY: visible
+}
+OL DIV.HxLinkTable {
+	MARGIN-TOP: 0em
+}
+UL DIV.HxLinkTable {
+	MARGIN-TOP: 0em
+}
+TABLE.HxLinkTable {
+	BORDER-BOTTOM: #999999 0px solid; BORDER-LEFT: #999999 0px solid; =
+BACKGROUND-COLOR: #999999; MARGIN-TOP: 1.5em; WIDTH: auto; =
+MARGIN-BOTTOM: 0.3em; MARGIN-LEFT: -1em; FONT-SIZE: 100%; BORDER-TOP: =
+#999999 1px solid; BORDER-RIGHT: #999999 1px solid; BEHAVIOR: =
+url(hxlinktable.htc)
+}
+TABLE.HxLinkTable TH {
+	BORDER-BOTTOM: #999999 1px solid; TEXT-ALIGN: left; BORDER-LEFT: =
+#999999 1px solid; PADDING-BOTTOM: 4px; PADDING-LEFT: 6px; =
+PADDING-RIGHT: 6px; BORDER-TOP: #999999 0px solid; BORDER-RIGHT: #999999 =
+0px solid; PADDING-TOP: 4px
+}
+TABLE.HxLinkTable TD {
+	BORDER-BOTTOM: #999999 1px solid; TEXT-ALIGN: left; BORDER-LEFT: =
+#999999 1px solid; PADDING-BOTTOM: 4px; PADDING-LEFT: 6px; =
+PADDING-RIGHT: 6px; BORDER-TOP: #999999 0px solid; BORDER-RIGHT: #999999 =
+0px solid; PADDING-TOP: 4px
+}
+TABLE.HxLinkTable TH {
+	BACKGROUND: #cccccc; VERTICAL-ALIGN: bottom
+}
+TABLE.HxLinkTable TD {
+	BACKGROUND: #ffffff; VERTICAL-ALIGN: top
+}
+PRE.code {
+	PADDING-BOTTOM: 4px; BACKGROUND-COLOR: #eeeeee; PADDING-LEFT: 6px; =
+PADDING-RIGHT: 6px; PADDING-TOP: 4px
+}
+PRE {
+	MARGIN-TOP: 0.5em; MARGIN-BOTTOM: 0.5em
+}
+DIV.syntax {
+	MARGIN-TOP: 0.5em; MARGIN-BOTTOM: 0.5em
+}
+PRE {
+	FONT: 100% Monospace, Courier New, Courier; COLOR: #000066
+}
+CODE {
+	FONT: 100% Monospace, Courier New, Courier; COLOR: #000066
+}
+.code {
+	FONT: 100% Monospace, Courier New, Courier; COLOR: #000066
+}
+DIV.syntax {
+	FONT: 100% Monospace, Courier New, Courier; COLOR: #000066
+}
+PRE B {
+	LETTER-SPACING: 0.1em
+}
+CODE B {
+	LETTER-SPACING: 0.1em
+}
+PRE.syntax {
+	BORDER-BOTTOM: #999999 1px solid; BORDER-LEFT: #999999 1px solid; =
+PADDING-BOTTOM: 4px; MARGIN-TOP: 1em; PADDING-LEFT: 8px; PADDING-RIGHT: =
+8px; MARGIN-BOTTOM: 1em; BACKGROUND: #cccccc; LETTER-SPACING: 0.1em; =
+COLOR: #000000; BORDER-TOP: #999999 1px solid; CURSOR: text; =
+FONT-WEIGHT: bolder; BORDER-RIGHT: #999999 1px solid; PADDING-TOP: 4px
+}
+DIV.syntax {
+	BORDER-BOTTOM: #999999 1px solid; BORDER-LEFT: #999999 1px solid; =
+PADDING-BOTTOM: 4px; MARGIN-TOP: 1em; PADDING-LEFT: 8px; PADDING-RIGHT: =
+8px; MARGIN-BOTTOM: 1em; BACKGROUND: #cccccc; LETTER-SPACING: 0.1em; =
+COLOR: #000000; BORDER-TOP: #999999 1px solid; CURSOR: text; =
+FONT-WEIGHT: bolder; BORDER-RIGHT: #999999 1px solid; PADDING-TOP: 4px
+}
+.syntax SPAN.lang {
+	MARGIN: 0px; FONT-WEIGHT: normal
+}
+.syntax SPAN.meta {
+	FONT-STYLE: italic; MARGIN: 0px; FONT-WEIGHT: normal
+}
+.syntax A {
+	MARGIN: 0px; FONT-WEIGHT: normal
+}
+.syntax DIV {
+	TEXT-INDENT: -24px; PADDING-LEFT: 24px
+}
+.syntax .attribute {
+	FONT-WEIGHT: normal
+}
+DIV.footer {
+	FONT-STYLE: italic
+}
+DIV.footer HR {
+	HEIGHT: 1px; COLOR: #999999
+}
+OL {
+	MARGIN: 0.5em 0em 0em 4em
+}
+UL {
+	MARGIN: 0.5em 0em 0em 4em
+}
+LI {
+	MARGIN-BOTTOM: 0.5em
+}
+UL P {
+	MARGIN-LEFT: 0em
+}
+OL P {
+	MARGIN-LEFT: 0em
+}
+DL P {
+	MARGIN-LEFT: 0em
+}
+UL P.label {
+	MARGIN-TOP: 0.5em
+}
+OL P.label {
+	MARGIN-TOP: 0.5em
+}
+DL {
+	MARGIN-TOP: 0em; PADDING-LEFT: 1px
+}
+DD {
+	MARGIN-BOTTOM: 0em; MARGIN-LEFT: 1.5em
+}
+DT {
+	MARGIN-TOP: 0.5em
+}
+A:link {
+	COLOR: #0000ff
+}
+A:visited {
+	COLOR: #0000ff
+}
+A:hover {
+	COLOR: #3366ff
+}
+IMG {
+	BORDER-BOTTOM: medium none; BORDER-LEFT: medium none; BORDER-TOP: =
+medium none; BORDER-RIGHT: medium none
+}
+TABLE.dtTABLE TD IMG {
+	BORDER-BOTTOM: medium none; BORDER-LEFT: medium none; VERTICAL-ALIGN: =
+top; BORDER-TOP: medium none; MARGIN-RIGHT: 2px; BORDER-RIGHT: medium =
+none
+}
+.missing {
+	COLOR: red; FONT-WEIGHT: bold
+}
+DIV.Hierarchy {
+	MARGIN: 0.5em 0em 0.5em 1em
+}
+
+------=_NextPart_000_0038_01CC9A1D.AEB37F70--

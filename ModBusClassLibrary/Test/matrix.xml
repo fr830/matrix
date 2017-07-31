@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="windows-1251" ?>
+<matrix>
+  <tagcache interval="1000" type="disk" path="logs/tags;logs/tags.bak" description="время обновления кэша в мс"/>
+  <logmanager mode="nolog" description="log|nolog">
+    <logfiles>
+      <logfile name="log1" path="logs/log1" size="32768"/>
+      <logfile name="log2" path="logs/log2" size="32768"/>
+      <logfile name="log3" path="logs/log3" size="32768"/>
+    </logfiles>
+    <message name="message" path="logs/app.log" level="info"/>
+  </logmanager>
+	
+  <tagstoremanager>
+    <tagstore mode="file" description="file|mssql|oracle">
+      <init filename="logs/store.dat" delemiter=";" />
+    </tagstore>
+  </tagstoremanager>
+
+  <servicemanager checkinterval="10000">
+    <services>
+
+      <!-- Сервисы для опроса конвейров-->
+      <service name="konv.154.dll" type="dll" enabled="true" description="Опрос весового прибора конвейра № 154">        
+        <init interval="5000" startif="[konv.154.updateTag]=0" status="[konv.154.updateTag]=1" keepalive="true" 
+          assembly="ModBusDevice.dll" type="ModBusDevice.ModBusDeviceClass" method="ReadVariables"
+          checkinterval="60000" description="">
+          <param name="comport" type="string" typeval="const" value="COM2;9600;8;0;2;1000" />
+		  <param name="NameService" type="string" typeval="const" value="konv.154.dll" />
+		  <param name="numkonv" type="string" typeval="const" value="154" />          
+
+          <param name="addr1" type="string" typeval="tag" value="konv.154.addr.1" />
+          <param name="addr2" type="string" typeval="tag" value="konv.154.addr.2" />
+          <param name="addr3" type="string" typeval="tag" value="konv.154.addr.3" />
+          <param name="addr4" type="string" typeval="tag" value="konv.154.addr.4" />
+          
+          <param name="dataXML"  type="string" typeval="tag" value="konv.154.DataXML" direction="out"/>
+        </init>
+      </service>
+
+		<!--
+      <service name="konv.159.dll" type="dll" enabled="true" description="Опрос весового прибора конвейра № 159">
+        <init interval="5000" startif="[konv.159.updateTag]=0" status="[konv.159.updateTag]=1" keepalive="true"
+          assembly="ModBusDevice.dll" type="ModBusDevice.ModBusDeviceClass" method="ReadVariables"
+          checkinterval="60000" description="">
+          <param name="comport" type="string" typeval="const" value="COM4;9600;8;0;1;1000" />
+		  <param name="NameService" type="string" typeval="const" value="konv.159.dll" />			
+          <param name="numkonv" type="string" typeval="const" value="159" />
+
+          <param name="addr1" type="string" typeval="tag" value="konv.159.addr.1" />
+          <param name="addr2" type="string" typeval="tag" value="konv.159.addr.2" />
+          <param name="addr3" type="string" typeval="tag" value="konv.159.addr.3" />
+          <param name="addr4" type="string" typeval="tag" value="konv.159.addr.4" />
+
+          <param name="dataXML"  type="string" typeval="tag" value="konv.159.DataXML" direction="out"/>
+        </init>
+      </service>
+
+
+      <service name="konv.174.dll" type="dll" enabled="true" description="Опрос весового прибора конвейра № 174">
+        <init interval="5000" startif="[konv.174.updateTag]=0" status="[konv.174.updateTag]=1" keepalive="true" 
+          assembly="ModBusDevice.dll" type="ModBusDevice.ModBusDeviceClass" method="ReadVariables"
+          checkinterval="60000" description="">
+          <param name="comport" type="string" typeval="const" value="COM4;9600;8;0;2;1000" />
+		  <param name="NameService" type="string" typeval="const" value="konv.174.dll" />
+		  <param name="numkonv" type="string" typeval="const" value="174" />
+
+          <param name="addr1" type="string" typeval="tag" value="konv.174.addr.1" />
+          <param name="addr2" type="string" typeval="tag" value="konv.174.addr.2" />
+          <param name="addr3" type="string" typeval="tag" value="konv.174.addr.3" />
+          <param name="addr4" type="string" typeval="tag" value="konv.174.addr.4" />
+
+          <param name="dataXML"  type="string" typeval="tag" value="konv.174.DataXML" direction="out"/>
+        </init>
+      </service>
+-->
+
+      <!-- Сервисы для вставки данных в очередь сообшений-->
+      <service name="DataTransfer.154.dll" type="dll" enabled="true" description="Вставка в очередь сообщений конвейра № 154">
+        <init interval="5000" startif="[konv.154.updateTag]=1" status="[konv.154.updateTag]=0" keepalive="true"
+          assembly="DataTransfer.dll" type="DataTransferClassLibrary.DataTransfer" method="SendMessage"
+          checkinterval="60000" description="">
+
+          <param name="data"  type="string" typeval="tag" value="konv.154.DataXML"/>
+		  <param name="NameService" type="string" typeval="const" value="DataTransfer.154.dll" />			
+          
+        </init>
+      </service>
+
+		<!--
+      <service name="DataTransfer.159.dll" type="dll" enabled="true" description="Вставка в очередь сообщений конвейра № 154">
+        <init interval="5000" startif="[konv.159.updateTag]=1" status="[konv.159.updateTag]=0" keepalive="true"
+          assembly="DataTransfer.dll" type="DataTransferClassLibrary.DataTransfer" method="SendMessage"
+          checkinterval="60000" description="">
+
+          <param name="data"  type="string" typeval="tag" value="konv.159.DataXML"/>
+		  <param name="NameService" type="string" typeval="const" value="DataTransfer.159.dll" />
+
+		</init>
+      </service>
+
+
+      <service name="DataTransfer.174.dll" type="dll" enabled="true" description="Вставка в очередь сообщений конвейра № 174">
+        <init interval="5000" startif="[konv.174.updateTag]=1" status="[konv.174.updateTag]=0" keepalive="true"
+          assembly="DataTransfer.dll" type="DataTransferClassLibrary.DataTransfer" method="SendMessage"
+          checkinterval="60000" description="">
+
+          <param name="data"  type="string" typeval="tag" value="konv.174.DataXML"/>
+		  <param name="NameService" type="string" typeval="const" value="DataTransfer.174.dll" />
+
+		</init>
+      </service>
+		-->
+
+		<!-- Сервисы для считывания данных из очередь сообшений и вставки на сервер-->
+      <service name="DataRoute.dll" type="dll" enabled="true" description="Считывание из очереди сообщений и вставка на сервер">
+        <init interval="1000" startif="" status="" keepalive="true"
+          assembly="DataTransfer.dll" type="DataTransferClassLibrary.DataTransfer" method="RouteMessages"
+          checkinterval="10000" description="">
+
+          <param name="StrConnection" type="string" typeval="const" 
+           value="Integrated Security=true; Initial Catalog=OreBlendingPlant; server=ER-DB1.zsmk.ru\ER_DB1; Connection Timeout=5" />
+			
+		  <param name="NameService" type="string" typeval="const" value="DataRoute.dll" />
+
+
+		</init>
+      </service>
+
+    </services>
+  </servicemanager>
+  <tagmanager>
+    <tags>
+      <!-- Теги для передачи данных по конвейрам-->
+
+      <!-- Конвейр № 154-->
+      <tag name="konv.154.addr.1" type="int" description="Адрес регистра: нагрузка">0</tag>
+      <tag name="konv.154.addr.2" type="int" description="Адрес регистра: производительность">2</tag>
+      <tag name="konv.154.addr.3" type="int" description="Адрес регистра: скорость ленты">6</tag>
+      <tag name="konv.154.addr.4" type="int" description="Адрес регистра: основной счетчик">12</tag>
+      
+      <tag name="konv.154.DataXML" type="xml" description="Данные в формате XML"/>
+      <tag name="konv.154.updateTag" type="int" description=""/>
+
+
+      <!-- Конвейр № 159-->
+      <tag name="konv.159.addr.1" type="int" description="Адрес регистра: нагрузка">0</tag>
+      <tag name="konv.159.addr.2" type="int" description="Адрес регистра: производительность">2</tag>
+      <tag name="konv.159.addr.3" type="int" description="Адрес регистра: скорость ленты">6</tag>
+      <tag name="konv.159.addr.4" type="int" description="Адрес регистра: основной счетчик">12</tag>
+
+      <tag name="konv.159.DataXML" type="xml" description="Данные в формате XML"/>
+      <tag name="konv.159.updateTag" type="int" description=""/>
+
+      <!-- Конвейр № 174-->
+      <tag name="konv.174.addr.1" type="int" description="Адрес регистра: нагрузка">0</tag>
+      <tag name="konv.174.addr.2" type="int" description="Адрес регистра: производительность">2</tag>
+      <tag name="konv.174.addr.3" type="int" description="Адрес регистра: скорость ленты">6</tag>
+      <tag name="konv.174.addr.4" type="int" description="Адрес регистра: основной счетчик">12</tag>
+
+      <tag name="konv.174.DataXML" type="xml" description="Данные в формате XML"/>
+      <tag name="konv.174.updateTag" type="int" description=""/>
+
+    </tags>
+  </tagmanager>
+</matrix>

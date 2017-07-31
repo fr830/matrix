@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="windows-1251" ?>
+<matrix>
+  <tagcache interval="5000" type="disk" path="logs/tags" description="время обновления кэша в мс"/>
+  <logmanager mode="nolog" description="log|nolog">
+    <logfiles>
+      <logfile name="log1" path="logs/log1" size="32768"/>
+      <logfile name="log2" path="logs/log2" size="32768"/>
+      <logfile name="log3" path="logs/log3" size="32768"/>
+    </logfiles>
+    <message name="message" path="logs/app.log"/>
+  </logmanager>
+  <tagstoremanager>
+    <tagstore name="file" mode="file">
+     <init filename="logs/store.dat" delemiter=";" />
+    </tagstore>
+<!--
+    <tagstore name="sql" mode="mssql">
+      <init rowpertran="200" connectionString="Data Source=asu-ora-tool;Initial Catalog=matrix;Integrated Security=True;Pooling=False" />
+    </tagstore>
+    <tagstore name="sql" mode="oracle">
+     <init rowpertran="200" connectionString="Data Source=asu-ora-tool;Persist Security Info=True;User ID=matrix;password=matrix;Unicode=True" />
+    </tagstore>
+-->
+  </tagstoremanager>
+
+  <servicemanager checkinterval="5000">
+    <services>
+		<service name="k5.plav_cur" type="oracle">
+			<init interval="5000" startif="" status=""
+				  connectionString="Data Source=test_spp;Persist Security Info=True;User ID=korrop$root;password=otl;Unicode=True"
+				  type="scalar" checkinterval="180000" description="query|scalar|update">
+				<query>
+				<![CDATA[
+				  select nk, nplv, data, mz, LPAD(m.nmar,10)||' /'||lpad(m.prmar,3)||' /'||m.gost as nmz,tekoper, 
+						decode(t.tekoper,7,op.NOP,8,op.NOP,9,op.NOP,10,op.NOP,11,op.NOP,12,op.NOP,13,op.NOP,' ') as nop, 
+						vr_nach, vr_kon, zak_zad_kdps,
+						decode(zak_zad_kdps,999,'Изложницы',850,'Сортовая МНЛЗ',851,'Слябовая МНЛЗ','не задано') as razl
+						from kernel.poplav t, kernel.nto_pr op, kernel_nmarka m
+						where t.tekoper < 50 and t.nk = 5 and t.tekoper = op.kdop and t.mz = m.kdmar
+				]]>
+				</query>
+				<map name="k5.nk" column="nk"/>
+				<map name="k5.nplv" column="nplv"/>
+				<map name="k5.data" column="data"/>
+				<map name="k5.mz" column="mz"/>
+				<map name="k5.nmz" column="nmz"/>
+				<map name="k5.tekoper" column="tekoper"/>
+				<map name="k5.nop" column="nop"/>
+				<map name="k5.vr_nach" column="vr_nach"/>
+				<map name="k5.vr_kon" column="vr_kon"/>
+				<map name="k5.zak_zad_kdps" column="zak_zad_kdps"/>
+				<map name="k5.razl" column="razl"/>
+			</init>
+		</service>
+		<service name="k5.xim_cur" type="oracle">
+			<init interval="15000" startif="[k5.tekoper] &gt; 6 and [k5.tekoper] &lt; 14" status=""
+				  connectionString="Data Source=test_spp;Persist Security Info=True;User ID=korrop$root;password=otl;Unicode=True"
+				  type="scalar" checkinterval="180000" description="query|scalar|update">
+				<query>
+				<![CDATA[
+					select * from (select * from kernel_poeast t where t.nplv = :nplv order by time_pol desc ) 
+					where rownum=1
+				]]>
+				</query>
+				<param name="nplv" type="int" typeval="tag" value="k5.nplv" description="typeval is tag|const"/>
+				<map name="k5.xim.c" column="c"/>
+				<map name="k5.xim.p" column="p"/>
+				<map name="k5.xim.s" column="s"/>
+				<map name="k5.xim.al" column="al"/>
+				<map name="k5.xim.time_pol" column="time_pol"/>
+			</init>
+		</service>
+		<service name="k5.temp_cur" type="oracle">
+			<init interval="15000" startif="[k5.tekoper] &gt; 6 and [k5.tekoper] &lt; 14" status=""
+				  connectionString="Data Source=test_spp;Persist Security Info=True;User ID=korrop$root;password=otl;Unicode=True"
+				  type="scalar" checkinterval="180000" description="query|scalar|update">
+				<query>
+					<![CDATA[
+					select * from ( select * from kernel.potemp t where t.nplv = :nplv and t.tst is not null order by t.nzam desc) 
+					where rownum=1
+				]]>
+				</query>
+				<param name="nplv" type="int" typeval="tag" value="k5.nplv" description="typeval is tag|const"/>
+				<map name="k5.npov" column="npov"/>
+				<map name="k5.vrizmh" column="vrizmh"/>
+				<map name="k5.vrizmm" column="vrizmm"/>
+				<map name="k5.vrizms" column="vrizms"/>
+				<map name="k5.tst" column="tst"/>
+				<map name="k5.nzam" column="nzam"/>
+			</init>
+		</service>
+		<service name="nmat_oxl" type="oracle">
+			<init interval="5000" startif="[t_nmat_oxl]=false" status="[t_nmat_oxl]=true"
+				  connectionString="Data Source=test_spp;Persist Security Info=True;User ID=korrop$root;password=otl;Unicode=True"
+				  type="query" checkinterval="180000" description="query|scalar|update">
+				<query>
+					<![CDATA[
+					select KOD_VID, SNAM_VID, PNAM_VID from kernel_nmat_oxl
+				]]>
+				</query>
+				<map name="nmat_oxl" column=""/>
+			</init>
+		</service>
+		<service name="k5.group" type="group">
+			<init interval="15000" startif="[k5.tekoper] &gt; 6 and [k5.tekoper] &lt; 14" status=""
+				  checkinterval="180000" description="">
+				<group>
+					<map name="k5.nk"/>
+					<map name="k5.nplv"/>
+					<map name="k5.data"/>
+					<map name="k5.mz"/>
+					<map name="k5.nmz"/>
+					<map name="k5.tekoper"/>
+					<map name="k5.nop"/>
+					<map name="k5.vr_nach"/>
+					<map name="k5.vr_kon"/>
+					<map name="k5.zak_zad_kdps"/>
+					<map name="k5.razl"/>
+					<map name="k5.xim.c"/>
+					<map name="k5.xim.p"/>
+					<map name="k5.xim.s"/>
+					<map name="k5.xim.al"/>
+					<map name="k5.xim.time_pol"/>
+					<map name="k5.npov"/>
+					<map name="k5.vrizmh"/>
+					<map name="k5.vrizmm"/>
+					<map name="k5.vrizms"/>
+					<map name="k5.tst"/>
+					<map name="k5.nzam"/>
+					<map name="nmat_oxl" column=""/>
+				</group>
+				<map name="k5.group"/>
+			</init>
+		</service>
+		<!--service name="OpcClient1" type="mtrx_server.serviceOPCSimaticNET" assembly="serviceOPCSimaticNET.dll">
+        <init interval="1000"  startif="" callback="false" progid="OPC.SimaticNET" host="spp-mnlz-lfref" group="Nagrev" checkinterval="4000">
+          <tag name="nagrev" type="bool"  opctag="S7:[Nagrev]DB602,X8.0"/>
+          <tag name="arhiv" type="bool"  opctag="S7:[Nagrev]DB602,X8.1"/>
+          <tag name="plavka" type="string"  opctag="S7:[Nagrev]DB602,B14,20"/>
+          <tag name="pozkovsh" type="int"  opctag="S7:[Nagrev]DB602,W36"/>
+          <tag name="tag5" type="int"  opctag="S7:[Nagrev]DB602,W38"/>
+          <tag name="tag6" type="int"  opctag="S7:[Nagrev]DB602,W40"/>
+          <tag name="tag7" type="int"  opctag="S7:[Nagrev]DB602,W42"/>
+          <tag name="tag8" type="int"  opctag="S7:[Nagrev]DB602,W44"/>
+          <tag name="tag9" type="int"  opctag="S7:[Nagrev]DB602,W46"/>
+          <tag name="tag10" type="int"  opctag="S7:[Nagrev]DB602,W48"/>
+          <tag name="tag11" type="int"  opctag="S7:[Nagrev]DB602,W50"/>
+          <tag name="tag12" type="int"  opctag="S7:[Nagrev]DB602,W52"/>
+          <tag name="tag13" type="int"  opctag="S7:[Nagrev]DB602,W54"/>
+          <tag name="tag14" type="int"  opctag="S7:[Nagrev]DB602,W56"/>
+          <tag name="tag15" type="int"  opctag="S7:[Nagrev]DB602,W58"/>
+          <tag name="tag16" type="int"  opctag="S7:[Nagrev]DB602,W60"/>
+          <tag name="tag17" type="float"  opctag="S7:[Nagrev]DB602,REAL62"/>
+          <tag name="tag18" type="float"  opctag="S7:[Nagrev]DB602,REAL66"/>
+        </init>
+      </service>
+      <service name="OpcClient2" type="mtrx_server.AdapterOPCSimaticNET" assembly="serviceOPCSimaticNET.dll">
+        <init interval="1000" startif="[arhiv]=true" status="[arhiv]=false;[arhiv2db]=true"   callback="false" progid="OPC.SimaticNET" host="spp-mnlz-lfref" group="Nagrev" checkinterval="5000">
+          <tag name="arh_nplv" type="string"  opctag="S7:[Nagrev]DB602,B70,20"/>
+          <tag name="arh_pozkovsh" type="int"  opctag="S7:[Nagrev]DB602,W92"/>
+          <tag name="arh_by" type="int"  opctag="S7:[Nagrev]DB602,W94"/>
+          <tag name="arh_bm" type="int"  opctag="S7:[Nagrev]DB602,W96"/>
+          <tag name="arh_bd" type="int"  opctag="S7:[Nagrev]DB602,W98"/>
+          <tag name="arh_bh" type="int"  opctag="S7:[Nagrev]DB602,W100"/>
+          <tag name="arh_bmi" type="int"  opctag="S7:[Nagrev]DB602,W102"/>
+          <tag name="arh_bs" type="int"  opctag="S7:[Nagrev]DB602,W104"/>
+          <tag name="arh_ey" type="int"  opctag="S7:[Nagrev]DB602,W106"/>
+          <tag name="arh_em" type="int"  opctag="S7:[Nagrev]DB602,W108"/>
+          <tag name="arh_ed" type="int"  opctag="S7:[Nagrev]DB602,W110"/>
+          <tag name="arh_eh" type="int"  opctag="S7:[Nagrev]DB602,W112"/>
+          <tag name="arh_emi" type="int"  opctag="S7:[Nagrev]DB602,W114"/>
+          <tag name="arh_es" type="int"  opctag="S7:[Nagrev]DB602,W116"/>
+          <tag name="arh_pwrsum" type="float"  opctag="S7:[Nagrev]DB602,REAL118"/>
+          <tag name="arh_transtep" type="float"  opctag="S7:[Nagrev]DB602,REAL122"/>
+        </init>
+      </service>
+      <service name="OpcClient1" type="opc">
+        <init interval="500" callback="false" progid="OPC.SimaticNET" host="spp-mnlz-lfref" group="test1" checkinterval="2000">
+          <tag name="tag6" type="int" opctag="S7:[TwinLF]L2_MH_LifeCnt"/>
+          <tag name="tag7" type="int" opctag="db0931,INT0,1"/>
+        </init>
+      </service-->
+    </services>
+  </servicemanager>
+  <tagmanager>
+    <tags>
+		<!-- Текущая плавка -->
+		<tag name="k5.nk" type="int"/>
+		<tag name="k5.nplv" type="int"/>
+		<tag name="k5.data" type="datetime"/>
+		<tag name="k5.mz" type="int"/>
+		<tag name="k5.nmz" type="string"/>
+		<tag name="k5.tekoper" type="int"/>
+		<tag name="k5.nop" type="string"/>
+		<tag name="k5.vr_nach" type="datetime"/>
+		<tag name="k5.vr_kon" type="datetime"/>
+		<tag name="k5.zak_zad_kdps" type="int"/>
+		<tag name="k5.razl" type="string"/>
+		<!-- Текущая плавка -->
+		<!-- Химия плавки -->
+		<tag name="k5.xim.c" type="float"/>
+		<tag name="k5.xim.p" type="float"/>
+		<tag name="k5.xim.s" type="float"/>
+		<tag name="k5.xim.al" type="float"/>
+		<tag name="k5.xim.time_pol" type="datetime"/>
+		<!-- Химия плавки -->
+		<!-- Температура плавки -->
+		<tag name="k5.npov" type="int"/>
+		<tag name="k5.vrizmh" type="int"/>
+		<tag name="k5.vrizmm" type="int"/>
+		<tag name="k5.vrizms" type="int"/>
+		<tag name="k5.tst" type="int"/>
+		<tag name="k5.nzam" type="int"/>
+		<!-- Химия плавки -->
+		<!-- Охладители -->
+		<tag name="nmat_oxl" type="xml" />
+		<!-- Охладители -->
+		<!--Группа K5-->
+		<tag name="k5.group" type="xml" />
+		<!--Группа K5-->
+		<!--Тригеры-->
+		<tag name="t_nmat_oxl" type="bool" description="Триггер обновления данных справочника"/>
+		<tag name="k5.newplav_event" type="bool" description="Признак новой плавки для обновления данных по плавке"/>
+		<tag name="arhiv2db" type="bool" description="Признак для формирования архивной записи в БД"/>
+		<!--Тригеры-->
+	</tags>
+  </tagmanager>
+</matrix>

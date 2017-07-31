@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://tempuri.org/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="http://tempuri.org/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">
+      <s:element name="ReadTags">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="tags" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ReadTagsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ReadTagsResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WriteTags">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="xml" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="WriteTagsResponse">
+        <s:complexType />
+      </s:element>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="ReadTagsSoapIn">
+    <wsdl:part name="parameters" element="tns:ReadTags" />
+  </wsdl:message>
+  <wsdl:message name="ReadTagsSoapOut">
+    <wsdl:part name="parameters" element="tns:ReadTagsResponse" />
+  </wsdl:message>
+  <wsdl:message name="WriteTagsSoapIn">
+    <wsdl:part name="parameters" element="tns:WriteTags" />
+  </wsdl:message>
+  <wsdl:message name="WriteTagsSoapOut">
+    <wsdl:part name="parameters" element="tns:WriteTagsResponse" />
+  </wsdl:message>
+  <wsdl:portType name="tagsSoap">
+    <wsdl:operation name="ReadTags">
+      <wsdl:input message="tns:ReadTagsSoapIn" />
+      <wsdl:output message="tns:ReadTagsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="WriteTags">
+      <wsdl:input message="tns:WriteTagsSoapIn" />
+      <wsdl:output message="tns:WriteTagsSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="tagsSoap" type="tns:tagsSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="ReadTags">
+      <soap:operation soapAction="http://tempuri.org/ReadTags" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WriteTags">
+      <soap:operation soapAction="http://tempuri.org/WriteTags" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="tagsSoap12" type="tns:tagsSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="ReadTags">
+      <soap12:operation soapAction="http://tempuri.org/ReadTags" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="WriteTags">
+      <soap12:operation soapAction="http://tempuri.org/WriteTags" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="tags">
+    <wsdl:port name="tagsSoap" binding="tns:tagsSoap">
+      <soap:address location="http://localhost:1723/webmatrix/tags.asmx" />
+    </wsdl:port>
+    <wsdl:port name="tagsSoap12" binding="tns:tagsSoap12">
+      <soap12:address location="http://localhost:1723/webmatrix/tags.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

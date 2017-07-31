@@ -1,0 +1,1532 @@
+<?xml version="1.0" encoding="windows-1251" ?>
+<matrix>
+  <tagcache interval="1000" type="disk" path="logs/tags.xml;logs/tags.bak.xml" description="время обновления кэша в мс"/>
+  <logmanager mode="nolog" description="log|nolog">
+    <logfiles>
+      <logfile name="log1" path="logs/log1" size="32768"/>
+      <logfile name="log2" path="logs/log2" size="32768"/>
+      <logfile name="log3" path="logs/log3" size="32768"/>
+    </logfiles>
+    <message name="message" path="logs/app.log" level="debug" maxsize="524288" description="console|debug|info|warn|error"/>
+  </logmanager>
+  <tagstoremanager>
+    <tagstore mode="file" description="file|mssql|oracle">
+      <init filename="logs/store.dat" delimiter=";" />
+    </tagstore>
+  </tagstoremanager>
+
+  <servicemanager checkinterval="5000">
+    <services>
+
+      <!--Определение рабочих баз серверов WinCC-->
+
+      <service description="Определение рабочей базы сервера WinCC DB1" name="WinCC.DB1.CURDB" type="mssql" enabled="false">
+        <init interval="3000" startif="" status=""
+        connectionString="Data Source=[WINCCDB1.HOST];Initial Catalog=master;user id=[WINCCDB1.USER];password=[WINCCDB1.PWD];Pooling=true;"              
+            type="scalar" checkinterval="10000" retrypause="10000" description="query|scalar|update">
+          <query>
+            <![CDATA[
+				      SELECT name FROM sys.databases WHERE name LIKE 'CC_%R'
+				  ]]>
+          </query>
+          <map name="WINCCDB1.CURDB" column="name"/>
+        </init>
+      </service>
+      
+      <service description="Определение рабочей базы сервера WinCC DB2" name="WinCC.DB2.CURDB" type="mssql" enabled="false">
+        <init interval="3000" startif="" status=""
+        connectionString="Data Source=[WINCCDB2.HOST];Initial Catalog=master;user id=[WINCCDB2.USER];password=[WINCCDB2.PWD];Pooling=true;"
+            type="scalar" checkinterval="10000" retrypause="10000" description="query|scalar|update">
+          <query>
+            <![CDATA[
+				      SELECT name FROM sys.databases WHERE name LIKE 'CC_%R'
+				  ]]>
+          </query>
+          <map name="WINCCDB2.CURDB" column="name"/>
+        </init>
+      </service>
+
+      <service description="последнее обновление сервера WinCC DB1" name="WinCC.DB1.LASTRUNTIME" type="mssql" enabled="false">
+        <init interval="3000" startif="empty([WINCCDB1.CURDB])=false" status=""
+        connectionString="Data Source=[WINCCDB1.HOST];Initial Catalog=[WINCCDB1.CURDB];user id=[WINCCDB1.USER];password=[WINCCDB1.PWD];Pooling=true;"
+            type="scalar" checkinterval="10000" retrypause="10000" description="query|scalar|update">
+          <query>
+            <![CDATA[
+	      SELECT MAX(convert(datetime,DTSystem,21)) lastruntime FROM UA#DataRdyFlgs WHERE DTSystem > convert(varchar,GETDATE()-10,21) and 			DTSystem < convert(varchar,GETDATE()+1,21)
+				    ]]>
+          </query>
+          <map name="WINCCDB1.LASTRUNTIME" column="lastruntime"/>
+        </init>
+      </service>
+      
+      <service description="последнее обновление сервера WinCC DB2" name="WinCC.DB2.LASTRUNTIME" type="mssql" enabled="false">
+        <init interval="3000" startif="empty([WINCCDB2.CURDB])=false" status=""
+        connectionString="Data Source=[WINCCDB2.HOST];Initial Catalog=[WINCCDB2.CURDB];user id=[WINCCDB2.USER];password=[WINCCDB2.PWD];Pooling=true;"
+            type="scalar" checkinterval="10000" retrypause="10000" description="query|scalar|update">
+          <query>
+            <![CDATA[
+	      SELECT MAX(convert(datetime,DTSystem,21)) lastruntime FROM UA#DataRdyFlgs WHERE DTSystem > convert(varchar,GETDATE()-10,21) and 				DTSystem < convert(varchar,GETDATE()+1,21)
+				    ]]>
+          </query>
+          <map name="WINCCDB2.LASTRUNTIME" column="lastruntime"/>
+        </init>
+      </service>
+
+      <service description="Test" name="Test.Exec" type="exec" enabled="false">
+        <init interval="5000" startif="" status=""
+            cmd="cscript" workdir="c:/windows/temp"
+            checkinterval="60000" description="query|scalar|update">
+          <param name="arg0" type="string" typeval="val" value="/B"/>
+          <param name="arg1" type="string" typeval="file" value="test.js">
+            <![CDATA[           
+            //Вывод всех аргументов
+            for(i=0; i < WScript.Arguments.length; i++)
+              WScript.StdOut.WriteLine("Arg["+i+"]="+WScript.Arguments(i));
+            
+            //while(true);
+            
+            for(i=0; i < 1000; i++)
+              WScript.StdOut.WriteLine("Test line №"+i);
+
+//            var now = Date();
+//            WScript.StdOut.WriteLine(now);
+//            WScript.Sleep(3000);                        
+//            var now1 = Date();
+//            WScript.StdOut.WriteLine(now1);
+
+            WScript.StdOut.WriteLine("RETURNname="");            
+            ]]>
+          </param>
+          <map name="MASTER.CONNECTION" type="var" value="MASTER.CONNECTION"/>
+        </init>
+      </service>
+
+
+      <service description="выбор мастер сервера WinCC" name="WinCC.Master.Select" type="exec" enabled="false">
+        <init interval="5000" startif="empty([WINCCDB1.LASTRUNTIME])=false and empty([WINCCDB2.LASTRUNTIME])=false" status=""
+            cmd="cscript" workdir="c:/windows/temp"
+            checkinterval="60000" description="query|scalar|update">
+          <param name="arg0" type="string" typeval="val" value="//nologo"/>
+          <param name="arg1" type="string" typeval="file" value="SelectMaster.js">
+              <![CDATA[
+            function parseDateTime(p){
+              var pt = p.split(" ");
+              var p1 = pt[0].split(".");
+              dd = parseInt(p1[0],10);
+              mm = parseInt(p1[1],10)-1;
+              yy = parseInt(p1[2],10);
+
+              var p2 = pt[1].split(":");
+              
+              hh = parseInt(p2[0],10);
+              mi = parseInt(p2[1],10);
+              ss = parseInt(p2[2],10);
+              return new Date(yy,mm,dd,hh,mi,ss);              
+            }
+            
+            //Вывод всех аргументов
+            for(i=0; i < WScript.Arguments.length; i++)
+              WScript.StdOut.WriteLine("Arg["+i+"]="+WScript.Arguments(i));
+            
+            //присвоим параметры переменным
+            LASTRUNTIME1 = WScript.Arguments(0);  
+            LASTRUNTIME2 = WScript.Arguments(1);  
+            HOST1 = WScript.Arguments(2);  
+            HOST2 = WScript.Arguments(3);  
+            CURDB1 = WScript.Arguments(4);  
+            CURDB2 = WScript.Arguments(5);  
+            USER1 = WScript.Arguments(6);  
+            USER2 = WScript.Arguments(7);  
+            PWD1 = WScript.Arguments(8);  
+            PWD2 = WScript.Arguments(9);  
+            
+            if(LASTRUNTIME1!=null){
+              LASTRUNTIME1 = parseDateTime(LASTRUNTIME1);
+              WScript.StdOut.WriteLine("LASTRUNTIME1=" + LASTRUNTIME1);
+            }
+            if(LASTRUNTIME2!=null){
+              LASTRUNTIME2 = parseDateTime(LASTRUNTIME2);
+              WScript.StdOut.WriteLine("LASTRUNTIME2=" + LASTRUNTIME2);
+            }
+                       
+            conStr="";
+            if(LASTRUNTIME1 >= LASTRUNTIME2)
+              conStr += "Data Source="+HOST1+";Initial Catalog="+CURDB1+";user id="+USER1+";password="+PWD1+";Pooling=true";
+            else
+              conStr += "Data Source="+HOST2+";Initial Catalog="+CURDB2+";user id="+USER2+";password="+PWD2+";Pooling=true";
+            conStr+=";Pooling=true;"
+            WScript.StdOut.WriteLine("RETURN");
+            WScript.StdOut.WriteLine("MASTER.CONNECTION="+conStr);
+            
+            ]]>
+          </param>
+          <param name="par0" type="string" typeval="tag" value="WINCCDB1.LASTRUNTIME"/>
+          <param name="par1" type="string" typeval="tag" value="WINCCDB2.LASTRUNTIME"/>
+          <param name="par2" type="string" typeval="tag" value="WINCCDB1.HOST"/>
+          <param name="par3" type="string" typeval="tag" value="WINCCDB2.HOST"/>
+          <param name="par4" type="string" typeval="tag" value="WINCCDB1.CURDB"/>
+          <param name="par5" type="string" typeval="tag" value="WINCCDB2.CURDB"/>
+          <param name="par6" type="string" typeval="tag" value="WINCCDB1.USER"/>
+          <param name="par7" type="string" typeval="tag" value="WINCCDB2.USER"/>
+          <param name="par8" type="string" typeval="tag" value="WINCCDB1.PWD"/>
+          <param name="par9" type="string" typeval="tag" value="WINCCDB2.PWD"/>
+          <map name="MASTER.CONNECTION" type="var" value="MASTER.CONNECTION"/>
+        </init>
+      </service>
+
+      <service description="WatchDog RTDS Web Service" name="WatchDog_RTDS_Web" type="exec" enabled="true">
+        <init interval="10000" startif="" status=""
+            cmd="C:\matrix\RTDSTest\RTDSTest.exe" workdir="C:\matrix\RTDSTest" checkinterval="180000" description="query|scalar|update|exec">
+          <param name="par0" type="string" typeval="val" value="ZSMK-SIM-001\PCI_1_FT,ZSMK-SIM-001\PCI_3_FT,ZSMK-SIM-001\PCI_3_FT"/>
+          <param name="par1" type="string" typeval="tag" value="RTDSWebService"/>
+          <map name="RTDSWebService" type="var" value="ERROR" />
+        </init>
+      </service>
+
+
+      <!--Определение рабочих баз серверов WinCC-->
+
+      <!--Передача справочников ИТС РБЦ на сервера WinCC-->
+ <!--
+      <service description="Последние обновления наборов данных сервера ИТС РБЦ" name="LastAccessSites" type="mssql">
+        <init interval="60000" startif="" status=""
+        connectionString="[itsRbcDBConnectString]"
+            type="scalar" checkinterval="60000" description="query|scalar|update">
+          <query>
+            <![CDATA[
+		SELECT 
+                UsersLastAccess = (SELECT change_time UsersLastAccess
+                  FROM ItsRbcExchange.IN_TABLES_CHANGE_STATUS
+                  WHERE LOWER(table_name)='users'),              
+                SitesLastAccess = (SELECT change_time SitesLastAccess
+                  FROM ItsRbcExchange.IN_TABLES_CHANGE_STATUS
+                  WHERE LOWER(table_name)='sites'),
+                DefectsLastAccess = (SELECT change_time
+                  FROM ItsRbcExchange.IN_TABLES_CHANGE_STATUS
+                  WHERE LOWER(table_name)='defects'),
+                RacksLastAccess = (SELECT change_time
+                  FROM ItsRbcExchange.IN_TABLES_CHANGE_STATUS
+                  WHERE LOWER(table_name)='racks'),  
+                ClassesLastAccess = (SELECT change_time
+                  FROM ItsRbcExchange.IN_TABLES_CHANGE_STATUS
+                WHERE LOWER(table_name)='classes'),  
+                DirectionsLastAccess = (SELECT change_time
+                  FROM ItsRbcExchange.IN_TABLES_CHANGE_STATUS
+                  WHERE LOWER(table_name)='directions'),
+                HLPDataLastAccess = (SELECT max(LastAccess)
+                  FROM ItsRbcExchange.UA#HLPData WITH(NOLOCK))
+				  ]]>
+          </query>
+          <map name="UsersLastAccess" column="UsersLastAccess"/>
+          <map name="SitesLastAccess" column="SitesLastAccess"/>
+          <map name="DefectsLastAccess" column="DefectsLastAccess"/>
+          <map name="RacksLastAccess" column="RacksLastAccess"/>
+          <map name="ClassesLastAccess" column="ClassesLastAccess"/>
+          <map name="DirectionsLastAccess" column="DirectionsLastAccess"/>
+          <map name="HLPDataLastAccess" column="HLPDataLastAccess"/>
+        </init>
+      </service>
+
+      <service description="Получение снимка справочника Users для сервера №1" name="getUsers.1" type="mssql">
+        <init interval="1000" startif="[Users.busy.1]=0 and [UsersLastAccess] > [UsersLastSnap.1]" status="[Users.busy.1]=1"
+        connectionString="[itsRbcDBConnectString]"
+            type="query" checkinterval="60000" description="query|scalar|update">
+          <query>
+            <![CDATA[
+				      SELECT ID, ULogin,UPassword,ALevel,UGroup,LastAccess,Fingerprint
+              FROM [ItsRbcExchange].[UA#USERS]
+				  ]]>
+          </query>
+          <map name="Users.1" column=""/>
+        </init>
+      </service>
+
+      <service description="Получение снимка справочника Users для сервера №2" name="getUsers.2" type="mssql">
+        <init interval="1000" startif="[Users.busy.2]=0 and [UsersLastAccess] > [UsersLastSnap.2]" status="[Users.busy.2]=1"
+        connectionString="[itsRbcDBConnectString]"
+            type="query" checkinterval="60000" description="query|scalar|update">
+          <query>
+            <![CDATA[
+				      SELECT ID, ULogin,UPassword,ALevel,UGroup,LastAccess,Fingerprint
+              FROM [ItsRbcExchange].[UA#USERS]
+				  ]]>
+          </query>
+          <map name="Users.2" column=""/>
+        </init>
+      </service>
+
+
+      <service description="Получение снимка справочника Sites для сервера №1" name="getHRLDataSites.1" type="mssql">
+        <init interval="1000" startif="[HLRDataSites.busy.1]=0 and [SitesLastAccess] > [HLRDataSitesLastSnap.1]" status="[HLRDataSites.busy.1]=1"
+        connectionString="[itsRbcDBConnectString]"
+            type="query" checkinterval="60000" description="query|scalar|update">
+          <query>
+            <![CDATA[
+				      SELECT ID,DataID,DataTypeID,DataItemID,DataItemVal,LastAccess,Fingerprint
+              FROM [ItsRbcExchange].[UA#HLRData]
+              WHERE DataTypeID=4
+				  ]]>
+          </query>
+          <map name="HLRDataSites.1" column=""/>
+        </init>
+      </service>
+
+      <service description="Получение снимка справочника Sites для сервера №2" name="getHRLDataSites.2" type="mssql">
+        <init interval="1000" startif="[HLRDataSites.busy.2]=0 and [SitesLastAccess] > [HLRDataSitesLastSnap.2]" status="[HLRDataSites.busy.2]=1"
+        connectionString="[itsRbcDBConnectString]"
+            type="query" checkinterval="60000" description="query|scalar|update">
+          <query>
+            <![CDATA[
+				      SELECT ID,DataID,DataTypeID,DataItemID,DataItemVal,LastAccess,Fingerprint
+              FROM [ItsRbcExchange].[UA#HLRData]
+              WHERE DataTypeID=4
+				  ]]>
+          </query>
+          <map name="HLRDataSites.2" column=""/>
+        </init>
+      </service>
+
+      <service description="Получение снимка справочника Defects" name="getHRLDataDefects.1" type="mssql">
+        <init interval="1000" startif="[HLRDataDefects.busy.1]=0 and [DefectsLastAccess] > [HLRDataDefectsLastSnap.1]" status="[HLRDataDefects.busy.1]=1"
+        connectionString="[itsRbcDBConnectString]"
+            type="query" checkinterval="60000" description="query|scalar|update">
+          <query>
+            <![CDATA[
+				      SELECT ID,DataID,DataTypeID,DataItemID,DataItemVal,LastAccess,Fingerprint
+              FROM [ItsRbcExchange].[UA#HLRData]
+              WHERE DataTypeID=2
+				  ]]>
+          </query>
+          <map name="HLRDataDefects.1" column=""/>
+        </init>
+      </service>
+
+      <service description="Получение снимка справочника Defects" name="getHRLDataDefects.2" type="mssql">
+        <init interval="1000" startif="[HLRDataDefects.busy.2]=0 and [DefectsLastAccess] > [HLRDataDefectsLastSnap.2]" status="[HLRDataDefects.busy.2]=1"
+        connectionString="[itsRbcDBConnectString]"
+            type="query" checkinterval="60000" description="query|scalar|update">
+          <query>
+            <![CDATA[
+				      SELECT ID,DataID,DataTypeID,DataItemID,DataItemVal,LastAccess,Fingerprint
+              FROM [ItsRbcExchange].[UA#HLRData]
+              WHERE DataTypeID=2
+				  ]]>
+          </query>
+          <map name="HLRDataDefects.2" column=""/>
+        </init>
+      </service>
+
+      <service description="Получение снимка справочника Racks" name="getHRLDataRacks.1" type="mssql">
+        <init interval="1000" startif="[HLRDataRacks.busy.1]=0 and [RacksLastAccess] > [HLRDataRacksLastSnap.1]" status="[HLRDataRacks.busy.1]=1"
+        connectionString="[itsRbcDBConnectString]"
+            type="query" checkinterval="60000" description="query|scalar|update">
+          <query>
+            <![CDATA[
+				      SELECT ID,DataID,DataTypeID,DataItemID,DataItemVal,LastAccess,Fingerprint
+              FROM [ItsRbcExchange].[UA#HLRData]
+              WHERE DataTypeID=1
+				    ]]>
+          </query>
+          <map name="HLRDataRacks.1" column=""/>
+        </init>
+      </service>
+
+      <service description="Получение снимка справочника Racks" name="getHRLDataRacks.2" type="mssql">
+        <init interval="1000" startif="[HLRDataRacks.busy.2]=0 and [RacksLastAccess] > [HLRDataRacksLastSnap.2]" status="[HLRDataRacks.busy.2]=1"
+        connectionString="[itsRbcDBConnectString]"
+            type="query" checkinterval="60000" description="query|scalar|update">
+          <query>
+            <![CDATA[
+				      SELECT ID,DataID,DataTypeID,DataItemID,DataItemVal,LastAccess,Fingerprint
+              FROM [ItsRbcExchange].[UA#HLRData]
+              WHERE DataTypeID=1
+				    ]]>
+          </query>
+          <map name="HLRDataRacks.2" column=""/>
+        </init>
+      </service>
+
+      <service description="Получение снимка справочника Directions" name="getHRLDataDirections.1" type="mssql">
+        <init interval="1000" startif="[HLRDataDirections.busy.1]=0 and [DirectionsLastAccess] > [HLRDataDirectionsLastSnap.1]" status="[HLRDataDirections.busy.1]=1"
+        connectionString="[itsRbcDBConnectString]"
+            type="query" checkinterval="60000" description="query|scalar|update">
+          <query>
+            <![CDATA[
+				      SELECT ID,DataID,DataTypeID,DataItemID,DataItemVal,LastAccess,Fingerprint
+              FROM [ItsRbcExchange].[UA#HLRData]
+              WHERE DataTypeID=3
+				  ]]>
+          </query>
+          <map name="HLRDataDirections.1" column=""/>
+        </init>
+      </service>
+
+      <service description="Получение снимка справочника Directions" name="getHRLDataDirections.2" type="mssql">
+        <init interval="1000" startif="[HLRDataDirections.busy.2]=0 and [DirectionsLastAccess] > [HLRDataDirectionsLastSnap.2]" status="[HLRDataDirections.busy.2]=1"
+        connectionString="[itsRbcDBConnectString]"
+            type="query" checkinterval="60000" description="query|scalar|update">
+          <query>
+            <![CDATA[
+				      SELECT ID,DataID,DataTypeID,DataItemID,DataItemVal,LastAccess,Fingerprint
+              FROM [ItsRbcExchange].[UA#HLRData]
+              WHERE DataTypeID=3
+				  ]]>
+          </query>
+          <map name="HLRDataDirections.2" column=""/>
+        </init>
+      </service>
+
+      <service decsription="Получение снимка справочника Classes" name="getHRLDataClasses.1" type="mssql">
+        <init interval="1000" startif="[HLRDataClasses.busy.1]=0 and [ClassesLastAccess] > [HLRDataClassesLastSnap.1]" status="[HLRDataClasses.busy.1]=1"
+        connectionString="[itsRbcDBConnectString]"
+            type="query" checkinterval="60000" description="query|scalar|update">
+          <query>
+            <![CDATA[
+				      SELECT ID,DataID,DataTypeID,DataItemID,DataItemVal,LastAccess,Fingerprint
+              FROM [ItsRbcExchange].[UA#HLRData]
+              WHERE DataTypeID in (0,5,6,7)
+				  ]]>
+          </query>
+          <map name="HLRDataClasses.1" column=""/>
+        </init>
+      </service>
+
+      <service decsription="Получение снимка справочника Classes" name="getHRLDataClasses.2" type="mssql">
+        <init interval="1000" startif="[HLRDataClasses.busy.2]=0 and [ClassesLastAccess] > [HLRDataClassesLastSnap.2]" status="[HLRDataClasses.busy.2]=1"
+        connectionString="[itsRbcDBConnectString]"
+            type="query" checkinterval="60000" description="query|scalar|update">
+          <query>
+            <![CDATA[
+				      SELECT ID,DataID,DataTypeID,DataItemID,DataItemVal,LastAccess,Fingerprint
+              FROM [ItsRbcExchange].[UA#HLRData]
+              WHERE DataTypeID in (0,5,6,7)
+				  ]]>
+          </query>
+          <map name="HLRDataClasses.2" column=""/>
+        </init>
+      </service>
+
+      <service description="Передача снимка справочника Users на сервер WinCC DB1" name="saveUsers.1" type="xml2mssql">
+        <init interval="1000" startif="empty([WINCCDB1.CURDB])=false and [Users.busy.1]=1 and [UsersLastAccess] > [UsersLastSnap.1]" status="[Users.busy.1]=0"
+         connectionString="Data Source=[WINCCDB1.HOST];Initial Catalog=[WINCCDB1.CURDB];User id=[WINCCDB1.USER];password=[WINCCDB1.PWD];Pooling=true"
+          type="snapshot"  checkinterval="60000" description="snapshot|merge">
+          <delete>
+            <command>
+              <![CDATA[
+                SELECT GETDATE()
+				      ]]>
+            </command>
+          </delete>
+          <insert>
+            <command>
+              <![CDATA[
+              IF EXISTS(SELECT ID FROM UA#USERS WHERE ID=@ID)
+                UPDATE UA#USERS SET
+                  ULogin = @ULogin, UPassword = @UPassword, UGroup = @UGroup, LastAccess = @LastAccess, Fingerprint = @Fingerprint        
+                WHERE ID=@ID  
+              ELSE
+                INSERT INTO UA#USERS(ID,ULogin,UPassword,ALevel,UGroup,LastAccess,Fingerprint)
+	              VALUES (@ID,@ULogin,@UPassword,@Alevel,@UGroup,@LastAccess,@Fingerprint) 
+				      ]]>
+            </command>
+            <param name="@ID" type="int" typeval="const" value="ID"/>
+            <param name="@ULogin" type="string" typeval="const" value="ULogin"/>
+            <param name="@UPassword" type="string" typeval="const" value="UPassword"/>
+            <param name="@ALevel" type="int" typeval="const" value="ALevel"/>
+            <param name="@UGroup" type="int" typeval="const" value="UGroup"/>
+            <param name="@LastAccess" type="datetime" typeval="const" value="LastAccess"/>
+            <param name="@Fingerprint" type="string" typeval="const" value="Fingerprint"/>
+          </insert>
+          <param name="table" type="xml" typeval="tag" value="Users.1" description="typeval is tag|const"/>
+          <param name="row" type="xml" typeval="const" value="//rows/row" description="XPath тега строки"/>
+          <param name="dmlStatus" type="string" typeval="const" value="dmlstatus" description="XPath тега поля DML операции I,U,D"/>
+          <param name="historyFieldName" type="string" typeval="const" value="LastAccess" description="XPath тега поля истории"/>
+          <param name="historyFieldValue" type="datetime" direction="out" typeval="tag" value="UsersLastSnap.1" description="typeval is tag|const"/>
+        </init>
+      </service>
+
+      <service description="Передача снимка справочника Users на сервер WinCC DB2" name="saveUsers.2" type="xml2mssql">
+        <init interval="1000" startif="empty([WINCCDB2.CURDB])=false and [Users.busy.2]=1 and [UsersLastAccess] > [UsersLastSnap.2]" status="[Users.busy.2]=0"
+         connectionString="Data Source=[WINCCDB2.HOST];Initial Catalog=[WINCCDB2.CURDB];User id=[WINCCDB2.USER];password=[WINCCDB2.PWD];Pooling=true"
+          type="snapshot"  checkinterval="60000" description="snapshot|merge">
+          <delete>
+            <command>
+              <![CDATA[
+                SELECT GETDATE()
+				      ]]>
+            </command>
+          </delete>
+          <insert>
+            <command>
+              <![CDATA[
+              IF EXISTS(SELECT ID FROM UA#USERS WHERE ID=@ID)
+                UPDATE UA#USERS SET
+                  ULogin = @ULogin, UPassword = @UPassword, UGroup = @UGroup, LastAccess = @LastAccess, Fingerprint = @Fingerprint        
+                WHERE ID=@ID  
+              ELSE
+                INSERT INTO UA#USERS(ID,ULogin,UPassword,ALevel,UGroup,LastAccess,Fingerprint)
+	              VALUES (@ID,@ULogin,@UPassword,@Alevel,@UGroup,@LastAccess,@Fingerprint) 
+				      ]]>
+            </command>
+            <param name="@ID" type="int" typeval="const" value="ID"/>
+            <param name="@ULogin" type="string" typeval="const" value="ULogin"/>
+            <param name="@UPassword" type="string" typeval="const" value="UPassword"/>
+            <param name="@ALevel" type="int" typeval="const" value="ALevel"/>
+            <param name="@UGroup" type="int" typeval="const" value="UGroup"/>
+            <param name="@LastAccess" type="datetime" typeval="const" value="LastAccess"/>
+            <param name="@Fingerprint" type="string" typeval="const" value="Fingerprint"/>
+          </insert>
+          <param name="table" type="xml" typeval="tag" value="Users.2" description="typeval is tag|const"/>
+          <param name="row" type="xml" typeval="const" value="//rows/row" description="XPath тега строки"/>
+          <param name="dmlStatus" type="string" typeval="const" value="dmlstatus" description="XPath тега поля DML операции I,U,D"/>
+          <param name="historyFieldName" type="string" typeval="const" value="LastAccess" description="XPath тега поля истории"/>
+          <param name="historyFieldValue" type="datetime" direction="out" typeval="tag" value="UsersLastSnap.2" description="typeval is tag|const"/>
+        </init>
+      </service>
+
+      <service description="Передача снимка справочника Sites на сервер WinCC DB1" name="saveHLRdataSites.1" type="xml2mssql">
+        <init interval="1000" startif="empty([WINCCDB1.CURDB])=false and [HLRDataSites.busy.1]=1 and [SitesLastAccess] > [HLRDataSitesLastSnap.1]" status="[HLRDataSites.busy.1]=0"
+         connectionString="Data Source=[WINCCDB1.HOST];Initial Catalog=[WINCCDB1.CURDB];User id=[WINCCDB1.USER];password=[WINCCDB1.PWD];Pooling=true"
+          type="snapshot"  checkinterval="60000" description="snapshot|merge">
+          <delete>
+            <command>
+              <![CDATA[
+              DELETE FROM UA#HLRData
+              WHERE DataTypeID=4
+				      ]]>
+            </command>  
+          </delete>
+          <insert>
+            <command>
+              <![CDATA[
+              INSERT INTO UA#HLRData(ID,DataID,DataTypeID,DataItemID,DataItemVal,LastAccess,Fingerprint) 
+              VALUES(@ID,@DataID,@DataTypeID,@DataItemID,@DataItemVal,@LastAccess,@Fingerprint) 
+				      ]]>
+            </command>
+            <param name="@ID" type="int" typeval="const" value="ID"/>
+            <param name="@DataID" type="int" typeval="const" value="DataID"/>
+            <param name="@DataTypeID" type="int" typeval="const" value="DataTypeID"/>
+            <param name="@DataItemID" type="int" typeval="const" value="DataItemID"/>
+            <param name="@DataItemVal" type="string" typeval="const" value="DataItemVal"/>
+            <param name="@LastAccess" type="datetime" typeval="const" value="LastAccess"/>
+            <param name="@Fingerprint" type="string" typeval="const" value="Fingerprint"/>
+          </insert>
+          <param name="table" type="xml" typeval="tag" value="HLRDataSites.1" description="typeval is tag|const"/>
+          <param name="row" type="xml" typeval="const" value="//rows/row" description="XPath тега строки"/>
+          <param name="dmlStatus" type="string" typeval="const" value="dmlstatus" description="XPath тега поля DML операции I,U,D"/>
+          <param name="historyFieldName" type="string" typeval="const" value="LastAccess" description="XPath тега поля истории"/>
+          <param name="historyFieldValue" type="datetime" direction="out" typeval="tag" value="HLRDataSitesLastSnap.1" description="typeval is tag|const"/>
+        </init>
+      </service>
+
+      <service description="Передача снимка справочника Sites на сервер WinCC DB2" name="saveHLRdataSites.2" type="xml2mssql">
+        <init interval="1000" startif="empty([WINCCDB2.CURDB])=false and [HLRDataSites.busy.2]=1 and [SitesLastAccess] > [HLRDataSitesLastSnap.2]" status="[HLRDataSites.busy.2]=0"
+         connectionString="Data Source=[WINCCDB2.HOST];Initial Catalog=[WINCCDB2.CURDB];User id=[WINCCDB2.USER];password=[WINCCDB2.PWD];Pooling=true"
+          type="snapshot"  checkinterval="60000" description="snapshot|merge">
+          <delete>
+            <command>
+              <![CDATA[
+              DELETE FROM UA#HLRData
+              WHERE DataTypeID=4
+				      ]]>
+            </command>
+          </delete>
+          <insert>
+            <command>
+              <![CDATA[
+              INSERT INTO UA#HLRData(ID,DataID,DataTypeID,DataItemID,DataItemVal,LastAccess,Fingerprint) 
+              VALUES(@ID,@DataID,@DataTypeID,@DataItemID,@DataItemVal,@LastAccess,@Fingerprint) 
+				      ]]>
+            </command>
+            <param name="@ID" type="int" typeval="const" value="ID"/>
+            <param name="@DataID" type="int" typeval="const" value="DataID"/>
+            <param name="@DataTypeID" type="int" typeval="const" value="DataTypeID"/>
+            <param name="@DataItemID" type="int" typeval="const" value="DataItemID"/>
+            <param name="@DataItemVal" type="string" typeval="const" value="DataItemVal"/>
+            <param name="@LastAccess" type="datetime" typeval="const" value="LastAccess"/>
+            <param name="@Fingerprint" type="string" typeval="const" value="Fingerprint"/>
+          </insert>
+          <param name="table" type="xml" typeval="tag" value="HLRDataSites.2" description="typeval is tag|const"/>
+          <param name="row" type="xml" typeval="const" value="//rows/row" description="XPath тега строки"/>
+          <param name="dmlStatus" type="string" typeval="const" value="dmlstatus" description="XPath тега поля DML операции I,U,D"/>
+          <param name="historyFieldName" type="string" typeval="const" value="LastAccess" description="XPath тега поля истории"/>
+          <param name="historyFieldValue" type="datetime" direction="out" typeval="tag" value="HLRDataSitesLastSnap.2" description="typeval is tag|const"/>
+        </init>
+      </service>
+
+      <service description="Передача снимка справочника Deffects" name="saveHLRdataDefects.1" type="xml2mssql">
+        <init interval="1000" startif="empty([WINCCDB1.CURDB])=false and [HLRDataDefects.busy.1]=1 and [DefectsLastAccess] > [HLRDataDefectsLastSnap.1]" status="[HLRDataDefects.busy.1]=0"
+         connectionString="Data Source=[WINCCDB1.HOST];Initial Catalog=[WINCCDB1.CURDB];User id=[WINCCDB1.USER];password=[WINCCDB1.PWD];Pooling=true"
+          type="snapshot"  checkinterval="60000" description="snapshot|merge">
+          <delete>
+            <command>
+              <![CDATA[
+              DELETE FROM UA#HLRData
+              WHERE DataTypeID=2
+				      ]]>
+            </command>
+          </delete>
+          <insert>
+            <command>
+              <![CDATA[
+              INSERT INTO UA#HLRData(ID,DataID,DataTypeID,DataItemID,DataItemVal,LastAccess,Fingerprint) 
+              VALUES(@ID,@DataID,@DataTypeID,@DataItemID,@DataItemVal,@LastAccess,@Fingerprint) 
+				      ]]>
+            </command>
+            <param name="@ID" type="int" typeval="const" value="ID"/>
+            <param name="@DataID" type="int" typeval="const" value="DataID"/>
+            <param name="@DataTypeID" type="int" typeval="const" value="DataTypeID"/>
+            <param name="@DataItemID" type="int" typeval="const" value="DataItemID"/>
+            <param name="@DataItemVal" type="string" typeval="const" value="DataItemVal"/>
+            <param name="@LastAccess" type="datetime" typeval="const" value="LastAccess"/>
+            <param name="@Fingerprint" type="string" typeval="const" value="Fingerprint"/>
+          </insert>
+          <param name="table" type="xml" typeval="tag" value="HLRDataDefects.1" description="typeval is tag|const"/>
+          <param name="row" type="xml" typeval="const" value="//rows/row" description="XPath тега строки"/>
+          <param name="dmlStatus" type="string" typeval="const" value="dmlstatus" description="XPath тега поля DML операции I,U,D"/>
+          <param name="historyFieldName" type="string" typeval="const" value="LastAccess" description="XPath тега поля истории"/>
+          <param name="historyFieldValue" type="datetime" direction="out" typeval="tag" value="HLRDataDefectsLastSnap.1" description="typeval is tag|const"/>
+        </init>
+      </service>
+
+      <service description="Передача снимка справочника Deffects" name="saveHLRdataDefects.2" type="xml2mssql">
+        <init interval="1000" startif="empty([WINCCDB2.CURDB])=false and [HLRDataDefects.busy.2]=1 and [DefectsLastAccess] > [HLRDataDefectsLastSnap.2]" status="[HLRDataDefects.busy.2]=0"
+         connectionString="Data Source=[WINCCDB2.HOST];Initial Catalog=[WINCCDB2.CURDB];User id=[WINCCDB2.USER];password=[WINCCDB2.PWD];Pooling=true"
+          type="snapshot"  checkinterval="60000" description="snapshot|merge">
+          <delete>
+            <command>
+              <![CDATA[
+              DELETE FROM UA#HLRData
+              WHERE DataTypeID=2
+				      ]]>
+            </command>
+          </delete>
+          <insert>
+            <command>
+              <![CDATA[
+              INSERT INTO UA#HLRData(ID,DataID,DataTypeID,DataItemID,DataItemVal,LastAccess,Fingerprint) 
+              VALUES(@ID,@DataID,@DataTypeID,@DataItemID,@DataItemVal,@LastAccess,@Fingerprint) 
+				      ]]>
+            </command>
+            <param name="@ID" type="int" typeval="const" value="ID"/>
+            <param name="@DataID" type="int" typeval="const" value="DataID"/>
+            <param name="@DataTypeID" type="int" typeval="const" value="DataTypeID"/>
+            <param name="@DataItemID" type="int" typeval="const" value="DataItemID"/>
+            <param name="@DataItemVal" type="string" typeval="const" value="DataItemVal"/>
+            <param name="@LastAccess" type="datetime" typeval="const" value="LastAccess"/>
+            <param name="@Fingerprint" type="string" typeval="const" value="Fingerprint"/>
+          </insert>
+          <param name="table" type="xml" typeval="tag" value="HLRDataDefects.2" description="typeval is tag|const"/>
+          <param name="row" type="xml" typeval="const" value="//rows/row" description="XPath тега строки"/>
+          <param name="dmlStatus" type="string" typeval="const" value="dmlstatus" description="XPath тега поля DML операции I,U,D"/>
+          <param name="historyFieldName" type="string" typeval="const" value="LastAccess" description="XPath тега поля истории"/>
+          <param name="historyFieldValue" type="datetime" direction="out" typeval="tag" value="HLRDataDefectsLastSnap.2" description="typeval is tag|const"/>
+        </init>
+      </service>
+
+      <service description="Передача снимка справочника Racks" name="saveHLRdataRacks.1" type="xml2mssql">
+        <init interval="1000" startif="empty([WINCCDB1.CURDB])=false and [HLRDataRacks.busy.1]=1 and [RacksLastAccess] > [HLRDataRacksLastSnap.1]" status="[HLRDataRacks.busy.1]=0"
+        connectionString="Data Source=[WINCCDB1.HOST];Initial Catalog=[WINCCDB1.CURDB];User id=[WINCCDB1.USER];password=[WINCCDB1.PWD];Pooling=true"
+          type="snapshot"  checkinterval="60000" description="snapshot|merge">
+          <delete>
+            <command>
+              <![CDATA[
+              DELETE FROM UA#HLRData
+              WHERE DataTypeID=1
+				      ]]>
+            </command>
+          </delete>
+          <insert>
+            <command>
+              <![CDATA[
+              INSERT INTO UA#HLRData(ID,DataID,DataTypeID,DataItemID,DataItemVal,LastAccess,Fingerprint) 
+              VALUES(@ID,@DataID,@DataTypeID,@DataItemID,@DataItemVal,@LastAccess,@Fingerprint) 
+				      ]]>
+            </command>
+            <param name="@ID" type="int" typeval="const" value="ID"/>
+            <param name="@DataID" type="int" typeval="const" value="DataID"/>
+            <param name="@DataTypeID" type="int" typeval="const" value="DataTypeID"/>
+            <param name="@DataItemID" type="int" typeval="const" value="DataItemID"/>
+            <param name="@DataItemVal" type="string" typeval="const" value="DataItemVal"/>
+            <param name="@LastAccess" type="datetime" typeval="const" value="LastAccess"/>
+            <param name="@Fingerprint" type="string" typeval="const" value="Fingerprint"/>
+          </insert>
+          <param name="table" type="xml" typeval="tag" value="HLRDataRacks.1" description="typeval is tag|const"/>
+          <param name="row" type="xml" typeval="const" value="//rows/row" description="XPath тега строки"/>
+          <param name="dmlStatus" type="string" typeval="const" value="dmlstatus" description="XPath тега поля DML операции I,U,D"/>
+          <param name="historyFieldName" type="string" typeval="const" value="LastAccess" description="XPath тега поля истории"/>
+          <param name="historyFieldValue" type="datetime" direction="out" typeval="tag" value="HLRDataRacksLastSnap.1" description="typeval is tag|const"/>
+        </init>
+      </service>
+
+      <service description="Передача снимка справочника Racks" name="saveHLRdataRacks.2" type="xml2mssql">
+        <init interval="1000" startif="empty([WINCCDB2.CURDB])=false and [HLRDataRacks.busy.2]=1 and [RacksLastAccess] > [HLRDataRacksLastSnap.2]" status="[HLRDataRacks.busy.2]=0"
+        connectionString="Data Source=[WINCCDB2.HOST];Initial Catalog=[WINCCDB2.CURDB];User id=[WINCCDB2.USER];password=[WINCCDB2.PWD];Pooling=true"
+          type="snapshot"  checkinterval="60000" description="snapshot|merge">
+          <delete>
+            <command>
+              <![CDATA[
+              DELETE FROM UA#HLRData
+              WHERE DataTypeID=1
+				      ]]>
+            </command>
+          </delete>
+          <insert>
+            <command>
+              <![CDATA[
+              INSERT INTO UA#HLRData(ID,DataID,DataTypeID,DataItemID,DataItemVal,LastAccess,Fingerprint) 
+              VALUES(@ID,@DataID,@DataTypeID,@DataItemID,@DataItemVal,@LastAccess,@Fingerprint) 
+				      ]]>
+            </command>
+            <param name="@ID" type="int" typeval="const" value="ID"/>
+            <param name="@DataID" type="int" typeval="const" value="DataID"/>
+            <param name="@DataTypeID" type="int" typeval="const" value="DataTypeID"/>
+            <param name="@DataItemID" type="int" typeval="const" value="DataItemID"/>
+            <param name="@DataItemVal" type="string" typeval="const" value="DataItemVal"/>
+            <param name="@LastAccess" type="datetime" typeval="const" value="LastAccess"/>
+            <param name="@Fingerprint" type="string" typeval="const" value="Fingerprint"/>
+          </insert>
+          <param name="table" type="xml" typeval="tag" value="HLRDataRacks.2" description="typeval is tag|const"/>
+          <param name="row" type="xml" typeval="const" value="//rows/row" description="XPath тега строки"/>
+          <param name="dmlStatus" type="string" typeval="const" value="dmlstatus" description="XPath тега поля DML операции I,U,D"/>
+          <param name="historyFieldName" type="string" typeval="const" value="LastAccess" description="XPath тега поля истории"/>
+          <param name="historyFieldValue" type="datetime" direction="out" typeval="tag" value="HLRDataRacksLastSnap.2" description="typeval is tag|const"/>
+        </init>
+      </service>
+     
+      <service description="Передача снимка справочника Directions" name="saveHLRdataDirections.1" type="xml2mssql">
+        <init interval="1000" startif="empty([WINCCDB1.CURDB])=false and [HLRDataDirections.busy.1]=1 and [DirectionsLastAccess] > [HLRDataDirectionsLastSnap.1]" status="[HLRDataDirections.busy.1]=0"
+         connectionString="Data Source=[WINCCDB1.HOST];Initial Catalog=[WINCCDB1.CURDB];User id=[WINCCDB1.USER];password=[WINCCDB1.PWD];Pooling=true"
+          type="snapshot"  checkinterval="60000" description="snapshot|merge">
+          <delete>
+            <command>
+              <![CDATA[
+              DELETE FROM UA#HLRData
+              WHERE DataTypeID=3
+				      ]]>
+            </command>
+          </delete>
+          <insert>
+            <command>
+              <![CDATA[
+              INSERT INTO UA#HLRData(ID,DataID,DataTypeID,DataItemID,DataItemVal,LastAccess,Fingerprint) 
+              VALUES(@ID,@DataID,@DataTypeID,@DataItemID,@DataItemVal,@LastAccess,@Fingerprint) 
+				      ]]>
+            </command>
+            <param name="@ID" type="int" typeval="const" value="ID"/>
+            <param name="@DataID" type="int" typeval="const" value="DataID"/>
+            <param name="@DataTypeID" type="int" typeval="const" value="DataTypeID"/>
+            <param name="@DataItemID" type="int" typeval="const" value="DataItemID"/>
+            <param name="@DataItemVal" type="string" typeval="const" value="DataItemVal"/>
+            <param name="@LastAccess" type="datetime" typeval="const" value="LastAccess"/>
+            <param name="@Fingerprint" type="string" typeval="const" value="Fingerprint"/>
+          </insert>
+          <param name="table" type="xml" typeval="tag" value="HLRDataDirections.1" description="typeval is tag|const"/>
+          <param name="row" type="xml" typeval="const" value="//rows/row" description="XPath тега строки"/>
+          <param name="dmlStatus" type="string" typeval="const" value="dmlstatus" description="XPath тега поля DML операции I,U,D"/>
+          <param name="historyFieldName" type="string" typeval="const" value="LastAccess" description="XPath тега поля истории"/>
+          <param name="historyFieldValue" type="datetime" direction="out" typeval="tag" value="HLRDataDirectionsLastSnap.1" description="typeval is tag|const"/>
+        </init>
+      </service>
+
+      <service description="Передача снимка справочника Directions" name="saveHLRdataDirections.2" type="xml2mssql">
+        <init interval="1000" startif="empty([WINCCDB2.CURDB])=false and [HLRDataDirections.busy.2]=1 and [DirectionsLastAccess] > [HLRDataDirectionsLastSnap.2]" status="[HLRDataDirections.busy.2]=0"
+         connectionString="Data Source=[WINCCDB2.HOST];Initial Catalog=[WINCCDB2.CURDB];User id=[WINCCDB2.USER];password=[WINCCDB2.PWD];Pooling=true"
+          type="snapshot"  checkinterval="60000" description="snapshot|merge">
+          <delete>
+            <command>
+              <![CDATA[
+              DELETE FROM UA#HLRData
+              WHERE DataTypeID=3
+				      ]]>
+            </command>
+          </delete>
+          <insert>
+            <command>
+              <![CDATA[
+              INSERT INTO UA#HLRData(ID,DataID,DataTypeID,DataItemID,DataItemVal,LastAccess,Fingerprint) 
+              VALUES(@ID,@DataID,@DataTypeID,@DataItemID,@DataItemVal,@LastAccess,@Fingerprint) 
+				      ]]>
+            </command>
+            <param name="@ID" type="int" typeval="const" value="ID"/>
+            <param name="@DataID" type="int" typeval="const" value="DataID"/>
+            <param name="@DataTypeID" type="int" typeval="const" value="DataTypeID"/>
+            <param name="@DataItemID" type="int" typeval="const" value="DataItemID"/>
+            <param name="@DataItemVal" type="string" typeval="const" value="DataItemVal"/>
+            <param name="@LastAccess" type="datetime" typeval="const" value="LastAccess"/>
+            <param name="@Fingerprint" type="string" typeval="const" value="Fingerprint"/>
+          </insert>
+          <param name="table" type="xml" typeval="tag" value="HLRDataDirections.2" description="typeval is tag|const"/>
+          <param name="row" type="xml" typeval="const" value="//rows/row" description="XPath тега строки"/>
+          <param name="dmlStatus" type="string" typeval="const" value="dmlstatus" description="XPath тега поля DML операции I,U,D"/>
+          <param name="historyFieldName" type="string" typeval="const" value="LastAccess" description="XPath тега поля истории"/>
+          <param name="historyFieldValue" type="datetime" direction="out" typeval="tag" value="HLRDataDirectionsLastSnap.2" description="typeval is tag|const"/>
+        </init>
+      </service>
+
+      <service description="Передача снимка справочника Classes" name="saveHLRDataClasses.1" type="xml2mssql">
+        <init interval="1000" startif="empty([WINCCDB1.CURDB])=false and [HLRDataClasses.busy.1]=1 and [ClassesLastAccess] > [HLRDataClassesLastSnap.1]" status="[HLRDataClasses.busy.1]=0"
+         connectionString="Data Source=[WINCCDB1.HOST];Initial Catalog=[WINCCDB1.CURDB];User id=[WINCCDB1.USER];password=[WINCCDB1.PWD];Pooling=true"
+          type="snapshot"  checkinterval="60000" description="snapshot|merge">
+          <delete>
+            <command>
+              <![CDATA[
+              DELETE FROM UA#HLRData
+              WHERE DataTypeID in (0,5,6,7)
+				      ]]>
+            </command>
+          </delete>
+          <insert>
+            <command>
+              <![CDATA[
+              INSERT INTO UA#HLRData(ID,DataID,DataTypeID,DataItemID,DataItemVal,LastAccess,Fingerprint) 
+              VALUES(@ID,@DataID,@DataTypeID,@DataItemID,@DataItemVal,@LastAccess,@Fingerprint) 
+				      ]]>
+            </command>
+            <param name="@ID" type="int" typeval="const" value="ID"/>
+            <param name="@DataID" type="int" typeval="const" value="DataID"/>
+            <param name="@DataTypeID" type="int" typeval="const" value="DataTypeID"/>
+            <param name="@DataItemID" type="int" typeval="const" value="DataItemID"/>
+            <param name="@DataItemVal" type="string" typeval="const" value="DataItemVal"/>
+            <param name="@LastAccess" type="datetime" typeval="const" value="LastAccess"/>
+            <param name="@Fingerprint" type="string" typeval="const" value="Fingerprint"/>
+          </insert>
+          <param name="table" type="xml" typeval="tag" value="HLRDataClasses.1" description="typeval is tag|const"/>
+          <param name="row" type="xml" typeval="const" value="//rows/row" description="XPath тега строки"/>
+          <param name="dmlStatus" type="string" typeval="const" value="dmlstatus" description="XPath тега поля DML операции I,U,D"/>
+          <param name="historyFieldName" type="string" typeval="const" value="LastAccess" description="XPath тега поля истории"/>
+          <param name="historyFieldValue" type="datetime" direction="out" typeval="tag" value="HLRDataClassesLastSnap.1" description="typeval is tag|const"/>
+        </init>
+      </service>
+      
+      <service description="Передача снимка справочника Classes" name="saveHLRDataClasses.2" type="xml2mssql">
+        <init interval="1000" startif="empty([WINCCDB2.CURDB])=false and [HLRDataClasses.busy.2]=1 and [ClassesLastAccess] > [HLRDataClassesLastSnap.2]" status="[HLRDataClasses.busy.2]=0"
+         connectionString="Data Source=[WINCCDB2.HOST];Initial Catalog=[WINCCDB2.CURDB];User id=[WINCCDB2.USER];password=[WINCCDB2.PWD];Pooling=true"
+          type="snapshot"  checkinterval="60000" description="snapshot|merge">
+          <delete>
+            <command>
+              <![CDATA[
+              DELETE FROM UA#HLRData
+              WHERE DataTypeID in (0,5,6,7)
+				      ]]>
+            </command>
+          </delete>
+          <insert>
+            <command>
+              <![CDATA[
+              INSERT INTO UA#HLRData(ID,DataID,DataTypeID,DataItemID,DataItemVal,LastAccess,Fingerprint) 
+              VALUES(@ID,@DataID,@DataTypeID,@DataItemID,@DataItemVal,@LastAccess,@Fingerprint) 
+				      ]]>
+            </command>
+            <param name="@ID" type="int" typeval="const" value="ID"/>
+            <param name="@DataID" type="int" typeval="const" value="DataID"/>
+            <param name="@DataTypeID" type="int" typeval="const" value="DataTypeID"/>
+            <param name="@DataItemID" type="int" typeval="const" value="DataItemID"/>
+            <param name="@DataItemVal" type="string" typeval="const" value="DataItemVal"/>
+            <param name="@LastAccess" type="datetime" typeval="const" value="LastAccess"/>
+            <param name="@Fingerprint" type="string" typeval="const" value="Fingerprint"/>
+          </insert>
+          <param name="table" type="xml" typeval="tag" value="HLRDataClasses.2" description="typeval is tag|const"/>
+          <param name="row" type="xml" typeval="const" value="//rows/row" description="XPath тега строки"/>
+          <param name="dmlStatus" type="string" typeval="const" value="dmlstatus" description="XPath тега поля DML операции I,U,D"/>
+          <param name="historyFieldName" type="string" typeval="const" value="LastAccess" description="XPath тега поля истории"/>
+          <param name="historyFieldValue" type="datetime" direction="out" typeval="tag" value="HLRDataClassesLastSnap.2" description="typeval is tag|const"/>
+        </init>
+      </service>
+-->
+      <!--Передача справочников ИТС РБЦ на сервера WinCC-->
+
+      <!--Передача набора данных HLPData на сервера WinCC-->
+<!--            
+      <service description="Получение набора изменёных данных" name="getHLPData.1" type="mssql">
+        <init interval="1000" startif="[HLPData.busy.1]=0 and [HLPDataLastAccess] > [HLPDataLastSnap.1]" status="[HLPData.busy.1]=1"
+        connectionString="[itsRbcDBConnectString]" type="query" checkinterval="600000" description="query|scalar|update">
+          <query>
+            <![CDATA[
+            SELECT ID,DataID,DataTypeID,DataItemID,DataItemVal,LastAccess,Fingerprint
+            FROM [ItsRbcExchange].[UA#HLPData] WITH(NOLOCK)
+            WHERE LastAccess in 
+              (SELECT TOP 100 LastAccess FROM 
+                  (SELECT distinct LastAccess FROM [ItsRbcExchange].[UA#HLPData]
+                    WHERE LastAccess >= (SELECT MIN(LastAccess) LastAccess FROM [ItsRbcExchange].[UA#HLPData] WITH(NOLOCK) WHERE LastAccess > ISNULL(@LastAccess,GETDATE()-30)) 
+                  ) t
+            ORDER BY LastAccess)
+            AND ISNULL(DataItemVal,'') != ''
+            ]]>
+          </query>
+          <param name="@LastAccess" type="datetime" typeval="tag" value="HLPDataLastSnap.1"/>
+          <map name="HLPData.1" column=""/>
+        </init>
+      </service>
+
+      <service description="Получение набора изменёных данных" name="getHLPData.2" type="mssql">
+        <init interval="1000" startif="[HLPData.busy.2]=0 and [HLPDataLastAccess] > [HLPDataLastSnap.2]" status="[HLPData.busy.2]=1"
+        connectionString="[itsRbcDBConnectString]"
+            type="query" checkinterval="600000" description="query|scalar|update">
+          <query>
+            <![CDATA[
+            SELECT ID,DataID,DataTypeID,DataItemID,DataItemVal,LastAccess,Fingerprint
+            FROM [ItsRbcExchange].[UA#HLPData] WITH(NOLOCK)
+            WHERE LastAccess in 
+              (SELECT TOP 100 LastAccess FROM 
+                  (SELECT distinct LastAccess FROM [ItsRbcExchange].[UA#HLPData]
+                    WHERE LastAccess >= (SELECT MIN(LastAccess) LastAccess FROM [ItsRbcExchange].[UA#HLPData] WITH(NOLOCK) WHERE LastAccess > ISNULL(@LastAccess,GETDATE()-30)) 
+                  ) t
+            ORDER BY LastAccess)
+            AND ISNULL(DataItemVal,'') != ''
+            ]]>
+          </query>
+          <param name="@LastAccess" type="datetime" typeval="tag" value="HLPDataLastSnap.2"/>
+          <map name="HLPData.2" column=""/>
+        </init>
+      </service>
+
+      <service description="Передача набора изменённых данных" name="saveHLPData.1" type="xml2mssql">
+        <init interval="1000" startif="empty([WINCCDB1.CURDB])=false and [HLPDataLastAccess] > [HLPDataLastSnap.1] and [HLPData.busy.1]=1" status="[HLPData.busy.1]=0"
+         connectionString="Data Source=[WINCCDB1.HOST];Initial Catalog=[WINCCDB1.CURDB];User id=[WINCCDB1.USER];password=[WINCCDB1.PWD];Pooling=true"
+          type="snapshot"  checkinterval="600000" description="snapshot|merge">
+          <delete>
+            <command>
+              <![CDATA[
+              /*DELETE FROM UA#HLPData WHERE ID = -1*/
+				      ]]>
+            </command>
+          </delete>
+          <insert>
+            <command>
+              <![CDATA[
+              DELETE FROM UA#HLPData WHERE ID = @ID0;
+              INSERT INTO UA#HLPData(ID,DataID,DataTypeID,DataItemID,DataItemVal,LastAccess,Fingerprint) 
+              VALUES(@ID,@DataID,@DataTypeID,@DataItemID,@DataItemVal,@LastAccess,@Fingerprint);
+				      ]]>
+            </command>
+            <param name="@ID0" type="int" typeval="const" value="ID"/>
+            <param name="@ID" type="int" typeval="const" value="ID"/>
+            <param name="@DataID" type="int" typeval="const" value="DataID"/>
+            <param name="@DataTypeID" type="int" typeval="const" value="DataTypeID"/>
+            <param name="@DataItemID" type="int" typeval="const" value="DataItemID"/>
+            <param name="@DataItemVal" type="string" typeval="const" value="DataItemVal"/>
+            <param name="@LastAccess" type="datetime" typeval="const" value="LastAccess"/>
+            <param name="@Fingerprint" type="string" typeval="const" value="Fingerprint"/>
+          </insert>
+          <param name="table" type="xml" typeval="tag" value="HLPData.1" description="typeval is tag|const"/>
+          <param name="row" type="xml" typeval="const" value="//rows/row" description="XPath тега строки"/>
+          <param name="dmlStatus" type="string" typeval="const" value="dmlstatus" description="XPath тега поля DML операции I,U,D"/>
+          <param name="historyFieldName" type="string" typeval="const" value="LastAccess" description="XPath тега поля истории"/>
+          <param name="historyFieldValue" type="datetime" direction="out" typeval="tag" value="HLPDataLastSnap.1" description="typeval is tag|const"/>
+        </init>
+      </service>
+      <service description="Передача набора изменённых данных" name="saveHLPData.2" type="xml2mssql">
+        <init interval="1000" startif="empty([WINCCDB2.CURDB])=false and [HLPDataLastAccess] > [HLPDataLastSnap.2] and [HLPData.busy.2]=1" status="[HLPData.busy.2]=0"
+         connectionString="Data Source=[WINCCDB2.HOST];Initial Catalog=[WINCCDB2.CURDB];User id=[WINCCDB2.USER];password=[WINCCDB2.PWD];Pooling=true"
+          type="snapshot"  checkinterval="600000" description="snapshot|merge">
+          <delete>
+            <command>
+              <![CDATA[
+              /*DELETE FROM UA#HLPData WHERE ID = -1*/
+				      ]]>
+            </command>
+          </delete>
+          <insert>
+            <command>
+              <![CDATA[
+              DELETE FROM UA#HLPData WHERE ID = @ID0;
+              INSERT INTO UA#HLPData(ID,DataID,DataTypeID,DataItemID,DataItemVal,LastAccess,Fingerprint) 
+              VALUES(@ID,@DataID,@DataTypeID,@DataItemID,@DataItemVal,@LastAccess,@Fingerprint);
+				      ]]>
+            </command>
+            <param name="@ID0" type="int" typeval="const" value="ID"/>
+            <param name="@ID" type="int" typeval="const" value="ID"/>
+            <param name="@DataID" type="int" typeval="const" value="DataID"/>
+            <param name="@DataTypeID" type="int" typeval="const" value="DataTypeID"/>
+            <param name="@DataItemID" type="int" typeval="const" value="DataItemID"/>
+            <param name="@DataItemVal" type="string" typeval="const" value="DataItemVal"/>
+            <param name="@LastAccess" type="datetime" typeval="const" value="LastAccess"/>
+            <param name="@Fingerprint" type="string" typeval="const" value="Fingerprint"/>
+          </insert>
+          <param name="table" type="xml" typeval="tag" value="HLPData.2" description="typeval is tag|const"/>
+          <param name="row" type="xml" typeval="const" value="//rows/row" description="XPath тега строки"/>
+          <param name="dmlStatus" type="string" typeval="const" value="dmlstatus" description="XPath тега поля DML операции I,U,D"/>
+          <param name="historyFieldName" type="string" typeval="const" value="LastAccess" description="XPath тега поля истории"/>
+          <param name="historyFieldValue" type="datetime" direction="out" typeval="tag" value="HLPDataLastSnap.2" description="typeval is tag|const"/>
+        </init>
+      </service>
+-->    
+    <!--Передача набора данных HLPData на сервера WinCC-->
+
+      <!--Передача наборов данных ЭСПЦ в ИТС РБЦ-->
+<!--      
+      <service name="ESPC.Melt.XA" type="dll" enabled="true" description="Получение данных о химанализах разливок">
+        <init interval="60000" keepalive="true"
+          assembly="RBC.Exchange.dll" type="RBC.Exchange.ESPC" method="GetMeltsXA"
+          checkinterval="600000" description="">
+          <param name="espcDBConnectString" type="string" typeval="tag" value="espcDBConnectString" description=""/>
+          <param name="itsRbcDBConnectString" type="string" typeval="tag" value="itsRbcDBConnectString" description=""/>
+          <param name="maxMeltXACount" type="int" typeval="const" value="50" description=""/>
+          <param name="queueAddress" type="string" typeval="tag" value="queueAddress" description=""/>
+          <param name="oldDtVV" type="datetime" typeval="tag" value="ESPC.Melt.XA.lastDtVV" description=""/>
+          <param name="newDtVV" type="detetime" typeval="tag" value="ESPC.Melt.XA.lastDtVV" description="" direction="out"/>
+        </init>
+      </service>
+
+      <service name="ESPC.Melt.Attest" type="dll" enabled="true" description="Получение данных об аттестации плавок">
+        <init interval="60000" keepalive="true"
+          assembly="RBC.Exchange.dll" type="RBC.Exchange.ESPC" method="GetMeltAttests"
+          checkinterval="600000" description="">
+          <param name="espcDBConnectString" type="string" typeval="tag" value="espcLabDBConnectString" description=""/>
+          <param name="itsRbcDBConnectString" type="string" typeval="tag" value="itsRbcDBConnectString" description=""/>
+          <param name="maxMeltAttestCount" type="int" typeval="const" value="50" description=""/>
+          <param name="queueAddress" type="string" typeval="tag" value="queueAddress" description=""/>
+          <param name="oldLastAttestTime" type="datetime" typeval="tag" value="ESPC.Melt.Attest.lastAttestTime" description=""/>
+          <param name="newLastAttestTime" type="datetime" typeval="tag" value="ESPC.Melt.Attest.lastAttestTime" description="" direction="out"/>
+        </init>
+      </service>
+      
+      <service name="ESPC.Melt.MNLZ1" type="dll" enabled="true" description="Получение данных о разливках в ЭСПЦ на МНЛЗ-1">
+        <init interval="10000" keepalive="true"
+          assembly="RBC.Exchange.dll" type="RBC.Exchange.ESPC" method="GetMelts"
+          checkinterval="600000" description="">
+          <param name="espcDBConnectString" type="string" typeval="tag" value="rbc10DBConnectString" description=""/>
+          <param name="itsRbcDBConnectString" type="string" typeval="tag" value="itsRbcDBConnectString" description=""/>
+          <param name="maxMeltCount" type="int" typeval="const" value="50" description=""/>
+          <param name="queueAddress" type="string" typeval="tag" value="queueAddress" description=""/>
+          <param name="kodMNLZ" type="int" typeval="const" value="10" description=""/>
+          <param name="oldLastDate" type="datetime" typeval="tag" value="ESPC.Melt.lastDate_MNLZ1" description=""/>
+          <param name="newLastDate" type="datetime" typeval="tag" value="ESPC.Melt.lastDate_MNLZ1" description="" direction="out"/>
+        </init>
+      </service>
+
+      <service name="ESPC.Melt.MNLZ2" type="dll" enabled="true" description="Получение данных о разливках в ЭСПЦ на МНЛЗ-2">
+        <init interval="10000" keepalive="true"
+          assembly="RBC.Exchange.dll" type="RBC.Exchange.ESPC" method="GetMelts"
+          checkinterval="600000" description="">
+          <param name="espcDBConnectString" type="string" typeval="tag" value="rbc10DBConnectString" description=""/>
+          <param name="itsRbcDBConnectString" type="string" typeval="tag" value="itsRbcDBConnectString" description=""/>
+          <param name="maxMeltCount" type="int" typeval="const" value="50" description=""/>
+          <param name="queueAddress" type="string" typeval="tag" value="queueAddress" description=""/>
+          <param name="kodMNLZ" type="int" typeval="const" value="11" description=""/>
+          <param name="oldLastDate" type="datetime" typeval="tag" value="ESPC.Melt.lastDate_MNLZ2" description=""/>
+          <param name="newLastDate" type="datetime" typeval="tag" value="ESPC.Melt.lastDate_MNLZ2" description="" direction="out"/>
+        </init>
+      </service>
+
+      <service name="ESPC.Melt.BloomCount.MNLZ1" type="dll" enabled="true" description="Получение данных о количестве блюмов на разливках в ЭСПЦ на МНЛЗ-1">
+        <init interval="10000" keepalive="true"
+          assembly="RBC.Exchange.dll" type="RBC.Exchange.ESPC" method="GetMeltsBloomCount"
+          checkinterval="600000" description="">
+          <param name="espcDBConnectString" type="string" typeval="tag" value="rbc10DBConnectString" description=""/>
+          <param name="maxMeltCount" type="int" typeval="const" value="50" description=""/>
+          <param name="queueAddress" type="string" typeval="tag" value="queueAddress" description=""/>
+          <param name="kodMNLZ" type="int" typeval="const" value="10" description=""/>
+          <param name="oldLastDate" type="datetime" typeval="tag" value="ESPC.Melt.lastDateMeltBloomCount_MNLZ1" description=""/>
+          <param name="newLastDate" type="datetime" typeval="tag" value="ESPC.Melt.lastDateMeltBloomCount_MNLZ1" description="" direction="out"/>
+        </init>
+      </service>
+
+      <service name="ESPC.Melt.BloomCount.MNLZ2" type="dll" enabled="true" description="Получение данных о количестве блюмов на разливках в ЭСПЦ на МНЛЗ-2">
+        <init interval="10000" keepalive="true"
+          assembly="RBC.Exchange.dll" type="RBC.Exchange.ESPC" method="GetMeltsBloomCount"
+          checkinterval="600000" description="">
+          <param name="espcDBConnectString" type="string" typeval="tag" value="rbc10DBConnectString" description=""/>
+          <param name="maxMeltCount" type="int" typeval="const" value="50" description=""/>
+          <param name="queueAddress" type="string" typeval="tag" value="queueAddress" description=""/>
+          <param name="kodMNLZ" type="int" typeval="const" value="11" description=""/>
+          <param name="oldLastDate" type="datetime" typeval="tag" value="ESPC.Melt.lastDateMeltBloomCount_MNLZ2" description=""/>
+          <param name="newLastDate" type="datetime" typeval="tag" value="ESPC.Melt.lastDateMeltBloomCount_MNLZ2" description="" direction="out"/>
+        </init>
+      </service>
+      
+      <service name="ESPC.GetMeltsLimit" type="dll" enabled="true" description="Запрос ограничений по плавке по химии">
+        <init interval="60000" assembly="RBC.Exchange.dll" type="RBC.Exchange.ESPC" method="GetMeltsLimit" checkinterval="600000" description="">
+          <param name="espcDBConnectString" type="string" typeval="tag" value="espcDBConnectString" description=""/>
+          <param name="rbcDBConnectString" type="string" typeval="tag" value="itsRbcDBConnectString" description=""/>
+          <param name="delayHour" type="int" typeval="const" value="-3" description=""/>
+        </init>
+      </service>
+-->
+      <!--Подсистема обмена сообщениями-->
+<!--
+      <service name="ESPC.Messages" type="dll" enabled="true" description="Получение сообщений из ЭСПЦ">
+        <init interval="10000" keepalive="true"
+          assembly="RBC.Exchange.dll" type="RBC.Exchange.ESPC" method="GetMessages"
+          checkinterval="600000" description="">
+          <param name="espcDBConnectString" type="string" typeval="tag" value="rbc10DBConnectString" description=""/>
+          <param name="maxMessages" type="int" typeval="const" value="50" description=""/>
+          <param name="queueAddress" type="string" typeval="tag" value="queueAddress" description=""/>
+          <param name="oldLastTime" type="string" typeval="tag" value="ESPC.Messages.lastTime" description=""/>
+          <param name="newLastTime" type="string" typeval="tag" value="ESPC.Messages.lastTime" description="" direction="out"/>
+        </init>
+      </service>
+
+      <service name="ASUTP.Messages" type="dll" enabled="true" description="Получение данных о событиях в АСУТП РБЦ">
+        <init interval="10000" keepalive="true" startif="empty([MASTER.CONNECTION])=false"
+          assembly="RBC.Exchange.dll" type="RBC.Exchange.AsuTpRBC" method="GetMessages"
+          checkinterval="600000" description="">
+          <param name="asuTpRbcDBConnectString" type="string" typeval="tag" value="MASTER.CONNECTION" description="строка соединения для мастер сервера"/>
+          <param name="maxMessages" type="int" typeval="const" value="500" description=""/>
+          <param name="queueAddress" type="string" typeval="tag" value="queueAddress" description=""/>
+          <param name="queueError" type="string" typeval="tag" value="queueError" description=""/>
+          <param name="olddt" type="datetime" typeval="tag" value="ASUTP.LastAccess" description=""/>
+          <param name="newdt" type="datetime" typeval="tag" value="ASUTP.LastAccess" description="" direction="out"/>
+        </init>
+      </service>
+
+      <service name="ASUTP.Sheets" type="dll" enabled="true" description="Получение данных о событиях в АСУТП РБЦ">
+        <init interval="10000" keepalive="true" startif="empty([MASTER.CONNECTION])=false"
+          assembly="RBC.Exchange.dll" type="RBC.Exchange.AsuTpRBC" method="GetSheets"
+          checkinterval="600000" description="">
+          <param name="asuTpRbcDBConnectString" type="string" typeval="tag" value="MASTER.CONNECTION" description="строка соединения для мастер сервера"/>
+          <param name="maxMessages" type="int" typeval="const" value="500" description=""/>
+          <param name="queueAddress" type="string" typeval="tag" value="queueAddress" description=""/>
+          <param name="queueError" type="string" typeval="tag" value="queueError" description=""/>
+          <param name="olddt" type="datetime" typeval="tag" value="ASUTP.Sheet.LastAccess" description=""/>
+          <param name="newdt" type="datetime" typeval="tag" value="ASUTP.Sheet.LastAccess" description="" direction="out"/>
+        </init>
+      </service>
+-->
+      <!--Подсистема обмена сообщениями-->      
+
+      <!--ЛНК-100-->
+<!--
+      <service description="Получение тестов" name="LNK100.get" type="Matrix.Services.ServiceMySQL" assembly="Matrix.Services.ServiceMySQL.dll">
+        <init interval="30000" startif="[lnk100.busy]=0" status="[lnk100.busy]=1"
+        connectionString="[lnk100ConnectString]"
+            type="query" checkinterval="60000" description="query|scalar|update">
+          <query>
+            <![CDATA[
+	      select t.test_id, t.date, t.item_id, i.serial, t.result, e.result emat_result, c.result ec_result from tests t 
+                inner join items i on i.item_id=t.item_id 
+                left outer join emat_results e on e.test_id = t.test_id and e.is_latest_test=1
+                left outer join ec_results c on c.test_id = t.test_id and c.is_latest_test=1
+              where t.test_id > @lastTest and t.date <= date_add(UTC_TIMESTAMP(), INTERVAL -7 MINUTE) and t.is_latest_test=1 
+              limit 100
+				  ]]>
+          </query>
+          <map name="lnk100.tests" column=""/>
+          <param name="@lastTest" type="int" typeval="tag" value="lnk100.lastTest"/>
+        </init>
+      </service>
+
+      <service description="Передача тестов в ИТС РБЦ" name="LNK100.save" type="xml2mssql" enable="true">
+        <init interval="1000" startif="[lnk100.busy]=1" status="[lnk100.busy]=0"
+         connectionString="[itsRbcDBConnectString]"
+          type="snapshot"  checkinterval="60000" description="snapshot|merge">
+          <delete>
+            <command>
+              <![CDATA[SELECT 1]]>
+            </command>
+          </delete>
+          <insert>
+            <command>
+              <![CDATA[
+              MERGE lnk100.tests AS t 
+                USING (SELECT @test_id,@date,@item_id,@serial,@result,@emat_result,@ec_result) AS s (test_id,date,item_id,serial,result,emat_result,ec_result)
+                  ON (t.test_id = s.test_id)
+                WHEN MATCHED THEN 
+                  UPDATE SET date = s.date, item_id = s.item_id, serial = s.serial, result = s.result, emat_result = s.emat_result, ec_result = s.ec_result        
+	              WHEN NOT MATCHED THEN	
+	                INSERT (test_id,date,item_id,serial,result,emat_result,ec_result)
+	                VALUES (s.test_id,s.date,s.item_id,s.serial,s.result,s.emat_result,s.ec_result); 
+				      ]]>
+            </command>
+            <param name="@test_id" type="int" typeval="const" value="test_id"/>
+            <param name="@date" type="datetime" typeval="const" value="date"/>
+            <param name="@item_id" type="int" typeval="const" value="item_id"/>
+            <param name="@serial" type="string" typeval="const" value="serial"/>
+            <param name="@result" type="int" typeval="const" value="result"/>
+            <param name="@emat_result" type="int" typeval="const" value="emat_result"/>
+            <param name="@ec_result" type="int" typeval="const" value="ec_result"/>
+          </insert>
+          <param name="table" type="xml" typeval="tag" value="lnk100.tests" description="typeval is tag|const"/>
+          <param name="row" type="xml" typeval="const" value="//rows/row" description="XPath тега строки"/>
+          <param name="dmlStatus" type="string" typeval="const" value="dmlstatus" description="XPath тега поля DML операции I,U,D"/>
+          <param name="historyFieldName" type="string" typeval="const" value="test_id" description="XPath тега поля истории"/>
+          <param name="historyFieldValue" type="int" direction="out" typeval="tag" value="lnk100.lastTest" description="typeval is tag|const"/>
+        </init>
+      </service>
+
+-->
+      <!--ЛНК-100-->
+
+      <!--Подсистема простои -->      
+<!--      
+      <service description="Получение REP_DAY" name="REP_DAY.get" type="mssql" enabled="true">
+        <init interval="30000" startif="empty([MASTER.CONNECTION])=false and [REP_DAY.busy]=0" status="[REP_DAY.busy]=1"
+        connectionString="[MASTER.CONNECTION]"
+            type="query" checkinterval="180000" description="query|scalar|update">
+          <query>
+          <![CDATA[
+		SELECT TOP 100 [ID]
+		      ,[DayTime]
+		      ,[RPM_Flow]
+		      ,[Line1_Flow]
+		      ,[Line2_Flow]
+		      ,[Line3_Flow]
+		      ,[Line1_Idle]
+		      ,[Line2_Idle]
+		      ,[Line3_Idle]
+		      ,[Total_Idle]
+		      ,ISNULL([Line1_Idle_str],'') Line1_Idle_str
+		      ,ISNULL([Line2_Idle_str],'') Line2_Idle_str
+		      ,ISNULL([Line3_Idle_str],'') Line3_Idle_str
+		      ,[LastAccess]
+		      ,[Fingerprint]
+		FROM [dbo].[UA#REP_DAY]
+		WHERE LastAccess > @LastAccess 
+		ORDER BY LastAccess
+
+	  ]]>
+          </query>
+          <map name="REP_DAY" column=""/>
+          <param name="@LastAccess" type="datetime" typeval="tag" value="REP_DAY.LastAccess"/>
+        </init>
+      </service>
+
+      <service description="Передача REP_DAY" name="REP_DAY.save" type="xml2mssql" enabled="true">
+        <init interval="1000" startif="[REP_DAY.busy]=1" status="[REP_DAY.busy]=0"
+         connectionString="[itsRbcDBConnectString]"
+          type="snapshot"  checkinterval="180000" description="snapshot|merge">
+          <delete>
+            <command>
+              <![CDATA[SELECT 1]]>
+            </command>
+          </delete>
+          <insert>
+            <command>
+              <![CDATA[
+		MERGE otdelka25.UA#REP_DAY AS t 
+		USING (SELECT @ID, @DayTime, @RPM_Flow, @Line1_Flow, @Line2_Flow, @Line3_Flow, @Line1_Idle, @Line2_Idle, @Line3_Idle, @Total_Idle, @Line1_Idle_str, @Line2_Idle_str, @Line3_Idle_str, @LastAccess, @Fingerprint) 
+		AS s (ID, DayTime, RPM_Flow, Line1_Flow, Line2_Flow, Line3_Flow, Line1_Idle, Line2_Idle, Line3_Idle, Total_Idle, Line1_Idle_str, Line2_Idle_str, Line3_Idle_str, LastAccess, Fingerprint)
+		ON (t.ID = s.ID)
+		WHEN MATCHED THEN 
+		    UPDATE SET ID=s.ID, DayTime=s.DayTime, RPM_Flow=s.RPM_Flow, Line1_Flow=s.Line1_Flow, Line2_Flow=s.Line2_Flow, Line3_Flow=s.Line3_Flow, Line1_Idle=s.Line1_Idle, Line2_Idle=s.Line2_Idle, Line3_Idle=s.Line3_Idle, Total_Idle=s.Total_Idle, Line1_Idle_str=s.Line1_Idle_str, Line2_Idle_str=s.Line2_Idle_str, Line3_Idle_str=s.Line3_Idle_str, LastAccess=s.LastAccess, Fingerprint=s.Fingerprint
+		WHEN NOT MATCHED THEN	
+		    INSERT (ID, DayTime, RPM_Flow, Line1_Flow, Line2_Flow, Line3_Flow, Line1_Idle, Line2_Idle, Line3_Idle, Total_Idle, Line1_Idle_str, Line2_Idle_str, Line3_Idle_str, LastAccess, Fingerprint)
+		    VALUES (s.ID, s.DayTime, s.RPM_Flow, s.Line1_Flow, s.Line2_Flow, s.Line3_Flow, s.Line1_Idle, s.Line2_Idle, s.Line3_Idle, s.Total_Idle, s.Line1_Idle_str, s.Line2_Idle_str, s.Line3_Idle_str, s.LastAccess, s.Fingerprint); 
+	      ]]>
+            </command>
+            <param name="@ID" type="int" typeval="const" value="ID"/>
+            <param name="@DayTime" type="datetime" typeval="const" value="DayTime"/>
+            <param name="@RPM_Flow" type="int" typeval="const" value="RPM_Flow"/>
+            <param name="@Line1_Flow" type="int" typeval="const" value="Line1_Flow"/>
+            <param name="@Line2_Flow" type="int" typeval="const" value="Line2_Flow"/>
+            <param name="@Line3_Flow" type="int" typeval="const" value="Line3_Flow"/>
+            <param name="@Line1_Idle" type="int" typeval="const" value="Line1_Idle"/>
+            <param name="@Line2_Idle" type="int" typeval="const" value="Line2_Idle"/>
+            <param name="@Line3_Idle" type="int" typeval="const" value="Line3_Idle"/>
+            <param name="@Total_Idle" type="float" typeval="const" value="Total_Idle"/>
+            <param name="@Line1_Idle_str" type="string" typeval="const" value="Line1_Idle_str"/>
+            <param name="@Line2_Idle_str" type="string" typeval="const" value="Line2_Idle_str"/>
+            <param name="@Line3_Idle_str" type="string" typeval="const" value="Line3_Idle_str"/>
+            <param name="@LastAccess" type="datetime" typeval="const" value="LastAccess"/>
+            <param name="@Fingerprint" type="string" typeval="const" value="Fingerprint"/>
+          </insert>
+          <param name="table" type="xml" typeval="tag" value="REP_DAY" description="typeval is tag|const"/>
+          <param name="row" type="xml" typeval="const" value="//rows/row" description="XPath тега строки"/>
+          <param name="dmlStatus" type="string" typeval="const" value="dmlstatus" description="XPath тега поля DML операции I,U,D"/>
+          <param name="historyFieldName" type="string" typeval="const" value="LastAccess" description="XPath тега поля истории"/>
+          <param name="historyFieldValue" type="datetime" direction="out" typeval="tag" value="REP_DAY.LastAccess" description="typeval is tag|const"/>
+        </init>
+      </service>
+
+      <service description="Получение REP_HOUR" name="REP_HOUR.get" type="mssql" enabled="true">
+        <init interval="30000" startif="empty([MASTER.CONNECTION])=false and [REP_HOUR.busy]=0" status="[REP_HOUR.busy]=1"
+        connectionString="[MASTER.CONNECTION]"
+            type="query" checkinterval="180000" description="query|scalar|update">
+          <query>
+          <![CDATA[
+		SELECT TOP 100 [ID]
+		      ,[DayTime]
+		      ,[RPM_Flow]
+		      ,[Line1_Flow]
+		      ,[Line2_Flow]
+		      ,[Line3_Flow]
+		      ,[Line1_Idle]
+		      ,[Line2_Idle]
+		      ,[Line3_Idle]
+		      ,[Total_Idle]
+		      ,[LastAccess]
+		      ,[Fingerprint]
+		FROM [dbo].[UA#REP_HOUR]
+		WHERE LastAccess > @LastAccess and DayTime is not null 
+		ORDER BY LastAccess
+
+	  ]]>
+          </query>
+          <map name="REP_HOUR" column=""/>
+          <param name="@LastAccess" type="datetime" typeval="tag" value="REP_HOUR.LastAccess"/>
+        </init>
+      </service>
+
+      <service description="Передача REP_HOUR" name="REP_HOUR.save" type="xml2mssql" enabled="true">
+        <init interval="1000" startif="[REP_HOUR.busy]=1" status="[REP_HOUR.busy]=0"
+         connectionString="[itsRbcDBConnectString]"
+          type="snapshot"  checkinterval="180000" description="snapshot|merge">
+          <delete>
+            <command>
+              <![CDATA[SELECT 1]]>
+            </command>
+          </delete>
+          <insert>
+            <command>
+              <![CDATA[
+		MERGE otdelka25.UA#REP_HOUR AS t 
+		USING (SELECT @ID, @DayTime, @RPM_Flow, @Line1_Flow, @Line2_Flow, @Line3_Flow, @Line1_Idle, @Line2_Idle, @Line3_Idle, @Total_Idle, @LastAccess, @Fingerprint) 
+		AS s (ID, DayTime, RPM_Flow, Line1_Flow, Line2_Flow, Line3_Flow, Line1_Idle, Line2_Idle, Line3_Idle, Total_Idle, LastAccess, Fingerprint)
+		ON (t.ID = s.ID)
+		WHEN MATCHED THEN 
+		    UPDATE SET ID=s.ID, DayTime=s.DayTime, RPM_Flow=s.RPM_Flow, Line1_Flow=s.Line1_Flow, Line2_Flow=s.Line2_Flow, Line3_Flow=s.Line3_Flow, Line1_Idle=s.Line1_Idle, Line2_Idle=s.Line2_Idle, Line3_Idle=s.Line3_Idle, Total_Idle=s.Total_Idle, LastAccess=s.LastAccess, Fingerprint=s.Fingerprint
+		WHEN NOT MATCHED THEN	
+		    INSERT (ID, DayTime, RPM_Flow, Line1_Flow, Line2_Flow, Line3_Flow, Line1_Idle, Line2_Idle, Line3_Idle, Total_Idle, LastAccess, Fingerprint)
+		    VALUES (s.ID, s.DayTime, s.RPM_Flow, s.Line1_Flow, s.Line2_Flow, s.Line3_Flow, s.Line1_Idle, s.Line2_Idle, s.Line3_Idle, s.Total_Idle, s.LastAccess, s.Fingerprint); 
+	      ]]>
+            </command>
+            <param name="@ID" type="int" typeval="const" value="ID"/>
+            <param name="@DayTime" type="datetime" typeval="const" value="DayTime"/>
+            <param name="@RPM_Flow" type="int" typeval="const" value="RPM_Flow"/>
+            <param name="@Line1_Flow" type="int" typeval="const" value="Line1_Flow"/>
+            <param name="@Line2_Flow" type="int" typeval="const" value="Line2_Flow"/>
+            <param name="@Line3_Flow" type="int" typeval="const" value="Line3_Flow"/>
+            <param name="@Line1_Idle" type="int" typeval="const" value="Line1_Idle"/>
+            <param name="@Line2_Idle" type="int" typeval="const" value="Line2_Idle"/>
+            <param name="@Line3_Idle" type="int" typeval="const" value="Line3_Idle"/>
+            <param name="@Total_Idle" type="float" typeval="const" value="Total_Idle"/>
+            <param name="@LastAccess" type="datetime" typeval="const" value="LastAccess"/>
+            <param name="@Fingerprint" type="string" typeval="const" value="Fingerprint"/>
+          </insert>
+          <param name="table" type="xml" typeval="tag" value="REP_HOUR" description="typeval is tag|const"/>
+          <param name="row" type="xml" typeval="const" value="//rows/row" description="XPath тега строки"/>
+          <param name="dmlStatus" type="string" typeval="const" value="dmlstatus" description="XPath тега поля DML операции I,U,D"/>
+          <param name="historyFieldName" type="string" typeval="const" value="LastAccess" description="XPath тега поля истории"/>
+          <param name="historyFieldValue" type="datetime" direction="out" typeval="tag" value="REP_HOUR.LastAccess" description="typeval is tag|const"/>
+        </init>
+      </service>
+
+      <service description="Получение REP_SHIFT" name="REP_SHIFT.get" type="mssql" enabled="true">
+        <init interval="30000" startif="empty([MASTER.CONNECTION])=false and [REP_SHIFT.busy]=0" status="[REP_SHIFT.busy]=1"
+        connectionString="[MASTER.CONNECTION]"
+            type="query" checkinterval="180000" description="query|scalar|update">
+          <query>
+          <![CDATA[
+		SELECT TOP 100 [ID]
+		      ,[DayTime]
+		      ,[RPM_Flow]
+		      ,[Line1_Flow]
+		      ,[Line2_Flow]
+		      ,[Line3_Flow]
+		      ,[Line1_Idle]
+		      ,[Line2_Idle]
+		      ,[Line3_Idle]
+		      ,[Total_Idle]
+		      ,ISNULL([Line1_Idle_str],'') Line1_Idle_str
+		      ,ISNULL([Line2_Idle_str],'') Line2_Idle_str
+		      ,ISNULL([Line3_Idle_str],'') Line3_Idle_str
+		      ,[LastAccess]
+		      ,[Fingerprint]
+		FROM [dbo].[UA#REP_SHIFT]
+		WHERE LastAccess > @LastAccess 
+		ORDER BY LastAccess
+
+	  ]]>
+          </query>
+          <map name="REP_SHIFT" column=""/>
+          <param name="@LastAccess" type="datetime" typeval="tag" value="REP_SHIFT.LastAccess"/>
+        </init>
+      </service>
+
+      <service description="Передача REP_SHIFT" name="REP_SHIFT.save" type="xml2mssql" enabled="true">
+        <init interval="1000" startif="[REP_SHIFT.busy]=1" status="[REP_SHIFT.busy]=0"
+         connectionString="[itsRbcDBConnectString]"
+          type="snapshot"  checkinterval="180000" description="snapshot|merge">
+          <delete>
+            <command>
+              <![CDATA[SELECT 1]]>
+            </command>
+          </delete>
+          <insert>
+            <command>
+              <![CDATA[
+		MERGE otdelka25.UA#REP_SHIFT AS t 
+		USING (SELECT @ID, @DayTime, @RPM_Flow, @Line1_Flow, @Line2_Flow, @Line3_Flow, @Line1_Idle, @Line2_Idle, @Line3_Idle, @Total_Idle, @Line1_Idle_str, @Line2_Idle_str, @Line3_Idle_str, @LastAccess, @Fingerprint) 
+		AS s (ID, DayTime, RPM_Flow, Line1_Flow, Line2_Flow, Line3_Flow, Line1_Idle, Line2_Idle, Line3_Idle, Total_Idle, Line1_Idle_str, Line2_Idle_str, Line3_Idle_str, LastAccess, Fingerprint)
+		ON (t.ID = s.ID)
+		WHEN MATCHED THEN 
+		    UPDATE SET ID=s.ID, DayTime=s.DayTime, RPM_Flow=s.RPM_Flow, Line1_Flow=s.Line1_Flow, Line2_Flow=s.Line2_Flow, Line3_Flow=s.Line3_Flow, Line1_Idle=s.Line1_Idle, Line2_Idle=s.Line2_Idle, Line3_Idle=s.Line3_Idle, Total_Idle=s.Total_Idle, Line1_Idle_str=s.Line1_Idle_str, Line2_Idle_str=s.Line2_Idle_str, Line3_Idle_str=s.Line3_Idle_str, LastAccess=s.LastAccess, Fingerprint=s.Fingerprint
+		WHEN NOT MATCHED THEN	
+		    INSERT (ID, DayTime, RPM_Flow, Line1_Flow, Line2_Flow, Line3_Flow, Line1_Idle, Line2_Idle, Line3_Idle, Total_Idle, Line1_Idle_str, Line2_Idle_str, Line3_Idle_str, LastAccess, Fingerprint)
+		    VALUES (s.ID, s.DayTime, s.RPM_Flow, s.Line1_Flow, s.Line2_Flow, s.Line3_Flow, s.Line1_Idle, s.Line2_Idle, s.Line3_Idle, s.Total_Idle, s.Line1_Idle_str, s.Line2_Idle_str, s.Line3_Idle_str, s.LastAccess, s.Fingerprint); 
+	      ]]>
+            </command>
+            <param name="@ID" type="int" typeval="const" value="ID"/>
+            <param name="@DayTime" type="datetime" typeval="const" value="DayTime"/>
+            <param name="@RPM_Flow" type="int" typeval="const" value="RPM_Flow"/>
+            <param name="@Line1_Flow" type="int" typeval="const" value="Line1_Flow"/>
+            <param name="@Line2_Flow" type="int" typeval="const" value="Line2_Flow"/>
+            <param name="@Line3_Flow" type="int" typeval="const" value="Line3_Flow"/>
+            <param name="@Line1_Idle" type="int" typeval="const" value="Line1_Idle"/>
+            <param name="@Line2_Idle" type="int" typeval="const" value="Line2_Idle"/>
+            <param name="@Line3_Idle" type="int" typeval="const" value="Line3_Idle"/>
+            <param name="@Total_Idle" type="float" typeval="const" value="Total_Idle"/>
+            <param name="@Line1_Idle_str" type="string" typeval="const" value="Line1_Idle_str"/>
+            <param name="@Line2_Idle_str" type="string" typeval="const" value="Line2_Idle_str"/>
+            <param name="@Line3_Idle_str" type="string" typeval="const" value="Line3_Idle_str"/>
+            <param name="@LastAccess" type="datetime" typeval="const" value="LastAccess"/>
+            <param name="@Fingerprint" type="string" typeval="const" value="Fingerprint"/>
+          </insert>
+          <param name="table" type="xml" typeval="tag" value="REP_SHIFT" description="typeval is tag|const"/>
+          <param name="row" type="xml" typeval="const" value="//rows/row" description="XPath тега строки"/>
+          <param name="dmlStatus" type="string" typeval="const" value="dmlstatus" description="XPath тега поля DML операции I,U,D"/>
+          <param name="historyFieldName" type="string" typeval="const" value="LastAccess" description="XPath тега поля истории"/>
+          <param name="historyFieldValue" type="datetime" direction="out" typeval="tag" value="REP_SHIFT.LastAccess" description="typeval is tag|const"/>
+        </init>
+      </service>
+-->
+      <!--Подсистема простои -->
+<!--
+      <service description="выбор мастер сервера WinCC" name="WinCC.Master.Select" type="exec">
+        <init interval="1000" startif="" status=""
+            cmd="cscript" workdir="c:\\windows\\temp"
+            checkinterval="3000" beforeretry="3000" retrypause="60000" description="Запуск внешних программ и скриптов">
+          <param name="arg0" type="string" typeval="val" value="/B"/>
+          <param name="arg1" type="string" typeval="file" value="test.js">
+            <![CDATA[
+            //Вывод всех аргументов
+            //while(true);
+            WScript.StdOut.WriteLine("RETURN");
+            WScript.StdOut.WriteLine("RESULT=OK!");
+            
+            ]]>
+          </param>
+          <map name="MASTER.CONNECTION" type="var" value="RESULT"/>
+        </init>
+      </service>
+      -->
+
+
+    </services>
+  </servicemanager>
+  <tagmanager>
+    <tags>
+      <!-- Теги буфера строки -->
+      <tag name="espcDBConnectString" type="string" description="">Data Source=pcr_espc2;User Id=views_itsrbc;Password=htkmc2010</tag>
+      <tag name="espcLabDBConnectString" type="string" description="">Data Source=pc62_fin;User Id=views_itsrbc;Password=htkmc2010;</tag>
+      <tag name="rbc10DBConnectString" type="string" description="">Data Source=rbc10;User Id=rbc_out;Password=metalrbc;</tag>
+      <tag name="itsRbcDBConnectString" type="string" description="">Data Source=clrbcsql.sib.evraz.com;Initial Catalog=ItsRbcPassportRelsa;Persist Security Info=True;User ID=sprav_edit;Password=sprav</tag>
+      <tag name="lnk100ConnectString" type="string" comment="">Data Source=10.47.22.20;Initial Catalog=ndt_rail;Persist Security Info=false;User ID=evraz;Password=evraz</tag>
+
+      <tag name="WINCCDB1.HOST" type="string" description="Наименование рабочей базы сервера №1">10.47.22.3\WinCC</tag>
+      <tag name="WINCCDB1.USER" type="string" description="Наименование рабочей базы сервера №1">itsrbc</tag>
+      <tag name="WINCCDB1.PWD" type="string" description="Наименование рабочей базы сервера №1">itsrbc</tag>
+      <tag name="WINCCDB1.CURDB" type="string" description="Наименование рабочей базы сервера №1"/>
+      <tag name="WINCCDB1.LASTRUNTIME" type="datetime" description="Последняя активность сервера №1">07.09.2015 20:10:10</tag>
+
+      <tag name="WINCCDB2.HOST" type="string" description="Наименование рабочей базы сервера №2">10.47.22.4\WinCC</tag>
+      <tag name="WINCCDB2.USER" type="string" description="Наименование рабочей базы сервера №1">itsrbc</tag>
+      <tag name="WINCCDB2.PWD" type="string" description="Наименование рабочей базы сервера №1">itsrbc</tag>
+      <tag name="WINCCDB2.CURDB" type="string" description="Наименование рабочей базы сервера №2">xxx</tag>
+      <tag name="WINCCDB2.LASTRUNTIME" type="datetime" description="Последняя активность сервера №2">07.09.2015 03:10:10</tag>
+
+        <tag name="MASTER.CONNECTION" type="string" description="Строка соединения мастер сервера WinCC"/>
+
+      <tag name="UsersLastAccess" type="datetime" description="Дата изменения справочника Users"/>
+      <tag name="SitesLastAccess" type="datetime" description="Дата изменения справочника Sites"/>
+      <tag name="DefectsLastAccess" type="datetime" description="Дата изменения справочника Defects"/>
+      <tag name="RacksLastAccess" type="datetime" description="Дата изменения справочника Racks"/>
+      <tag name="ClassesLastAccess" type="datetime" description="Дата изменения справочника Classes"/>
+      <tag name="DirectionsLastAccess" type="datetime" description="Дата изменения справочника Directions"/>
+      <tag name="HLPDataLastAccess" type="datetime" description="Дата изменения таблицы HLPData"/>
+
+      <tag name="REP_DAY" type="xml" description="снимок простоев за день"/>
+      <tag name="REP_DAY.LastAccess" type="datetime" description="дата последнего снимка">01.09.2013 00:00:00</tag>
+      <tag name="REP_DAY.busy" type="int" description="флаг обработки передачи">0</tag>
+
+      <tag name="REP_HOUR" type="xml" description="снимок простоев за час"/>
+      <tag name="REP_HOUR.LastAccess" type="datetime" description="дата последнего снимка">01.09.2013 00:00:00</tag>
+      <tag name="REP_HOUR.busy" type="int" description="флаг обработки передачи"/>
+
+      <tag name="REP_SHIFT" type="xml" description="снимок простоев за SHIFT"/>
+      <tag name="REP_SHIFT.LastAccess" type="datetime" description="дата последнего снимка">01.09.2013 00:00:00</tag>
+      <tag name="REP_SHIFT.busy" type="int" description="флаг обработки передачи"/>
+
+      <tag name="lnk100.tests" type="xml" description="снимок тестов"/>
+      <tag name="lnk100.lastTest" type="int" description="ИД последнего теста"/>
+      <tag name="lnk100.busy" type="int" description="флаг обработки"/>
+
+      <tag name="Users.1" type="xml" description="снимок справочника Users"/>
+      <tag name="UsersLastSnap.1" type="datetime" description="дата последнего сброса справочника Users"/>
+      <tag name="Users.busy.1" type="int" description="флаг обработки"/>
+
+      <tag name="Users.2" type="xml" description="снимок справочника Users"/>
+      <tag name="UsersLastSnap.2" type="datetime" description="дата последнего сброса справочника Users"/>
+      <tag name="Users.busy.2" type="int" description="флаг обработки"/>
+
+      <tag name="HLRDataSites.1" type="xml" description="снимок справочника Sites"/>
+      <tag name="HLRDataSitesLastSnap.1" type="datetime" description="дата последнего сброса справочника Sites"/>
+      <tag name="HLRDataSites.busy.1" type="int" description="флаг обработки"/>
+
+      <tag name="HLRDataSites.2" type="xml" description="снимок справочника Sites"/>
+      <tag name="HLRDataSitesLastSnap.2" type="datetime" description="дата последнего сброса справочника Sites"/>
+      <tag name="HLRDataSites.busy.2" type="int" description="флаг обработки"/>
+
+      <tag name="HLRDataDefects.1" type="xml" description="снимок справочника Defects"/>
+      <tag name="HLRDataDefectsLastSnap.1" type="datetime" description="дата последнего сброса справочника Defects"/>
+      <tag name="HLRDataDefects.busy.1" type="int" description="флаг обработки"/>
+
+      <tag name="HLRDataDefects.2" type="xml" description="снимок справочника Defects"/>
+      <tag name="HLRDataDefectsLastSnap.2" type="datetime" description="дата последнего сброса справочника Defects"/>
+      <tag name="HLRDataDefects.busy.2" type="int" description="флаг обработки"/>
+
+      <tag name="HLRDataRacks.1" type="xml" description="снимок справочника Racks"/>
+      <tag name="HLRDataRacksLastSnap.1" type="datetime" description="дата последнего сброса справочника Racks"/>
+      <tag name="HLRDataRacks.busy.1" type="int" description="флаг обработки"/>
+
+      <tag name="HLRDataRacks.2" type="xml" description="снимок справочника Racks"/>
+      <tag name="HLRDataRacksLastSnap.2" type="datetime" description="дата последнего сброса справочника Racks"/>
+      <tag name="HLRDataRacks.busy.2" type="int" description="флаг обработки"/>
+
+      <tag name="HLRDataDirections.1" type="xml" description="снимок справочника Directions"/>
+      <tag name="HLRDataDirectionsLastSnap.1" type="datetime" description="дата последнего сброса справочника Directions"/>
+      <tag name="HLRDataDirections.busy.1" type="int" description="флаг обработки"/>
+
+      <tag name="HLRDataDirections.2" type="xml" description="снимок справочника Directions"/>
+      <tag name="HLRDataDirectionsLastSnap.2" type="datetime" description="дата последнего сброса справочника Directions"/>
+      <tag name="HLRDataDirections.busy.2" type="int" description="флаг обработки"/>
+
+      <tag name="HLRDataClasses.1" type="xml" description="снимок справочника Classes"/>
+      <tag name="HLRDataClassesLastSnap.1" type="datetime" description="дата последнего сброса справочника Classes"/>
+      <tag name="HLRDataClasses.busy.1" type="int" description="флаг обработки"/>
+
+      <tag name="HLRDataClasses.2" type="xml" description="снимок справочника Classes"/>
+      <tag name="HLRDataClassesLastSnap.2" type="datetime" description="дата последнего сброса справочника Classes"/>
+      <tag name="HLRDataClasses.busy.2" type="int" description="флаг обработки"/>
+
+      <tag name="HLPData.1" type="xml" description="снимок HLPData"/>
+      <tag name="HLPDataLastSnap.1" type="datetime" description="дата последнего сброса HLPData">28.10.13 16:00:00</tag>
+      <tag name="HLPData.busy.1" type="int" description="флаг обработки"/>
+
+      <tag name="HLPData.2" type="xml" description="снимок HLPData"/>
+      <tag name="HLPDataLastSnap.2" type="datetime" description="дата последнего сброса HLPData">28.10.13 16:00:00</tag>
+      <tag name="HLPData.busy.2" type="int" description="флаг обработки"/>
+
+      <tag name="MeltXA" type="xml" description="снимок MeltXA"/>
+      <tag name="ITSRBC.idHead" type="int" description="последний анализ"/>
+      <tag name="MeltXA.busy" type="int" description="флаг обработки"/>
+
+      <tag name="queueAddress" type="string" description="">net.msmq://clrbcapp.sib.evraz.com/private/rbcmessages;net.msmq://clrbcapp.sib.evraz.com/private/rbcmessagestest;net.msmq://sib-rbc-001/private/rbcmessages</tag>
+      <tag name="queueError" type="string" description="">net.msmq://clrbcapp.sib.evraz.com/private/error</tag>
+
+      <tag name="ESPC.Melt.XA.lastDtVV" type="datetime" description="">02.06.14 11:00:01</tag>
+      <tag name="ESPC.Melt.Attest.lastAttestTime" type="datetime" description="">02.06.14 11:24:01</tag>
+      <tag name="ESPC.Melt.lastDate_MNLZ1" type="datetime" description="">02.06.14 11:23:55</tag>
+      <tag name="ESPC.Melt.lastDate_MNLZ2" type="datetime" description="">02.06.14 11:23:55</tag>
+      <tag name="ESPC.Melt.lastDateMeltBloomCount_MNLZ1" type="datetime" description="">02.06.14 10:00:01</tag>
+      <tag name="ESPC.Melt.lastDateMeltBloomCount_MNLZ2" type="datetime" description="">02.06.14 10:00:01</tag>
+      <tag name="ASUTP.LastAccess" type="datetime" description="Дата последнего сообщения АСУТП РБЦ">02.06.14 04:39:30</tag>
+      <tag name="ASUTP.Sheet.LastAccess" type="datetime" description="Дата последней ведомости АСУТП РБЦ">02.06.14 04:13:44</tag>
+      <tag name="ESPC.Messages.lastTime" type="string" description="dd.mm.yy hh:mm:ss">02.06.14 11:05:01</tag>
+
+      <tag name="RTDSWebService" type="int" description="">0</tag>
+
+    </tags>                                                                                     
+  </tagmanager>
+</matrix>
